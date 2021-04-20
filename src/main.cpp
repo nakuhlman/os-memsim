@@ -1,9 +1,11 @@
+/** Includes **/
 #include <iostream>
 #include <string>
 #include <cstring>
 #include "mmu.h"
 #include "pagetable.h"
 
+/** Prototypes **/
 void printStartMessage(int page_size);
 void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table);
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table);
@@ -11,6 +13,7 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
 
+/** Main function **/
 int main(int argc, char **argv)
 {
     // Ensure user specified page size as a command line parameter
@@ -24,9 +27,9 @@ int main(int argc, char **argv)
     int page_size = std::stoi(argv[1]);
     printStartMessage(page_size);
 
-    // Create physical 'memory'
+    // Create physical 'memory' of 64 MB (64 * 1024 * 1024)
     uint32_t mem_size = 67108864;
-    void *memory = malloc(mem_size); // 64 MB (64 * 1024 * 1024)
+    void *memory = malloc(mem_size);
 
     // Create MMU and Page Table
     Mmu *mmu = new Mmu(mem_size);
@@ -34,18 +37,89 @@ int main(int argc, char **argv)
 
     // Prompt loop
     std::string command;
+    std::vector<std::string> command_parameters;
     std::cout << "> ";
     std::getline (std::cin, command);
+
+    // Handle current command
     while (command != "exit") {
-        // Handle command
-        // TODO: implement this!
+        
+        // Split the command into space-delimited arguments stored in the command_parameters vector
+        splitString(command, ' ', command_parameters);
+
+        // Parse create() arguments
+        if(command_parameters[0] == "create") {
+            int text_size = std::stoi(command_parameters[1]);
+            int data_size = std::stoi(command_parameters[2]);
+            createProcess(text_size, data_size, mmu, page_table);
+
+        // Parse allocate() arguments
+        } else if(command_parameters[0] == "allocate") {
+
+
+        // Parse set() arguments
+        } else if(command_parameters[0] == "set") {
+            uint32_t PID = std::stoi(command_parameters[1]);
+            std::string var_name = command_parameters[2];
+            uint32_t offset = std::stoi(command_parameters[3]);
+
+            // Call setVariable() for all n values passed in, starting from the 4th parameter and ending at the size of the vector
+            for(int i = 4; i < command_parameters.size(); i++) {
+                setVariable(PID, var_name, offset, &command_parameters[i], mmu, page_table, memory);
+            }
+
+        // Parse free() arguments
+        } else if(command_parameters[0] == "free") {
+            uint32_t PID = std::stoi(command_parameters[1]);
+            std::string var_name = command_parameters[2];
+            freeVariable(PID, var_name, mmu, page_table);
+
+        // Parse terminate() arguments 
+        } else if(command_parameters[0] == "terminate") {
+            uint32_t PID = std::stoi(command_parameters[1]);
+            terminateProcess(PID, mmu, page_table);
+
+        // Parse print() arguments
+        } else if(command_parameters[0] == "print") {
+            std::string object = command_parameters[1];
+            if(object == "mmu") {
+                // Print the MMU memory table
+                mmu->print();
+
+            } else if(object == "page") {
+                // Print the page table (do not need to print anything for free frames)
+
+            } else if(object == "processes") {
+                // Print a list of PIDs for processes that are still running
+
+            } else {
+                // If <object> is a "<PID>:<var_name>", print the value of the variable for that process 
+                std::vector<std::string> print_process_arguments;
+                splitString(object, ':', print_process_arguments);
+                try {
+                    uint32_t PID = std::stoi(print_process_arguments[0]);
+                    std::string var_name = print_process_arguments[1];
+
+                    // Print the value of the variable var_name for process PID
+
+
+                } catch(const std::invalid_argument& ia) {
+                    std::cout << "error: command not recognized";
+                }
+            }
+            
+
+        // Command not recognized
+        } else {
+            std::cout << "error: command not recognized";
+        }
 
         // Get next command
         std::cout << "> ";
         std::getline (std::cin, command);
     }
 
-    // Cean up
+    // Clean up
     free(memory);
     delete mmu;
     delete page_table;
@@ -53,6 +127,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
+/** Prints start message and command list **/
 void printStartMessage(int page_size)
 {
     std::cout << "Welcome to the Memory Allocation Simulator! Using a page size of " << page_size << " bytes." << std:: endl;
@@ -70,32 +145,45 @@ void printStartMessage(int page_size)
     std::cout << std::endl;
 }
 
+/** [DONE] Initializes a new process and prints its PID **/
 void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table)
 {
-    // TODO: implement this!
-    //   - create new process in the MMU
-    //   - allocate new variables for the <TEXT>, <GLOBALS>, and <STACK>
-    //   - print pid
+    // Create a new process in the MMU using the MMU's createProcess() method, which returns the current PID
+    uint32_t current_pid = mmu->createProcess();
+    // Allocate <TEXT> variable for the newly created process using text_size
+    allocateVariable(current_pid, "<TEXT>", Char, text_size, mmu, page_table);
+    // Allocate <GLOBALS> variable for the newly created process using data_size
+    allocateVariable(current_pid, "<GLOBALS>", Char, data_size, mmu, page_table);
+    // Allocate <STACK> variable with a defined size of 65536
+    allocateVariable(current_pid, "<STACK>", Char, 65536, mmu, page_table);
+    // Print the current PID to the console
+    std::cout << current_pid;
 }
 
+/** [INCOMPLETE] Allocates memory on the heap (how much depends on the data type and the number of elements), then prints the virtual memory address **/
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table)
 {
     // TODO: implement this!
     //   - find first free space within a page already allocated to this process that is large enough to fit the new variable
     //   - if no hole is large enough, allocate new page(s)
     //   - insert variable into MMU
-    //   - print virtual memory address
+    //   - print virtual memory address 
 }
 
+/** [INCOMPLETE] Sets the value for a variable starting at an offset **/
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
 {
     // TODO: implement this!
     //   - look up physical address for variable based on its virtual address / offset
+    page_table->getPhysicalAddress(pid, /** NEED VIRTUAL ADDRESS FROM allocate() **/);
+
     //   - insert `value` into `memory` at physical address
+    
     //   * note: this function only handles a single element (i.e. you'll need to call this within a loop when setting
-    //           multiple elements of an array)
+    //           multiple elements of an array) 
 }
 
+/** [INCOMPLETE] Deallocates memory on the heap that is associated with a variable **/
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table)
 {
     // TODO: implement this!
@@ -103,9 +191,67 @@ void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_
     //   - free page if this variable was the only one on a given page
 }
 
+/** [INCOMPLETE] Kills the specified process and frees all memory associated with it **/
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table)
 {
     // TODO: implement this!
     //   - remove process from MMU
+
     //   - free all pages associated with given process
+}
+
+/** splitString function imported from assignment 2 - splits a string based on a delimiter and stores the result in a vector **/
+void splitString(std::string text, char d, std::vector<std::string>& result)
+{   
+    enum states { NONE, IN_WORD, IN_STRING } state = NONE;
+    int i;
+    std::string token;
+    result.clear();
+    for (i = 0; i < text.length(); i++)
+    {
+        char c = text[i];
+        switch (state) {
+            case NONE:
+                if (c != d)
+                {
+                    if (c == '\"')
+                    {
+                        state = IN_STRING;
+                        token = "";
+                    }
+                    else
+                    {
+                        state = IN_WORD;
+                        token = c;
+                    }
+                }
+                break;
+            case IN_WORD:
+                if (c == d)
+                {
+                    result.push_back(token);
+                    state = NONE;
+                }
+                else
+                {
+                    token += c;
+                }
+                break;
+            case IN_STRING:
+                if (c == '\"')
+                {
+                    result.push_back(token);
+                    state = NONE;
+                }
+                else
+                {
+                    token += c;
+                }
+                break;
+        }
+    }
+    if (state != NONE)
+    {
+        result.push_back(token);
+    }
 }
