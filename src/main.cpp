@@ -12,8 +12,9 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory);
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
-
+void splitString(std::string text, char d, std::vector<std::string>& result);
 /** Main function **/
+
 int main(int argc, char **argv)
 {
     // Ensure user specified page size as a command line parameter
@@ -55,7 +56,44 @@ int main(int argc, char **argv)
 
         // Parse allocate() arguments
         } else if(command_parameters[0] == "allocate") {
+            /* 
+            void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table)
+            */
+            uint32_t pid = atoi(command_parameters[1].c_str());
 
+            //check if process exists
+            if(mmu->findProcess(pid)){
+            std::string var_name = command_parameters[2];
+            DataType type;
+                if(command_parameters[3] == "char"){
+                    type = DataType::Char;
+                }else if(command_parameters[3] == "int"){
+                type = DataType::Int;
+                }else if(command_parameters[3] == "short"){
+                    type = DataType::Short;
+                }else if(command_parameters[3] == "float"){
+                    type = DataType::Float;
+                }else if(command_parameters[3] == "double"){
+                    type = DataType::Double;
+                }else if(command_parameters[3] == "long"){
+                    type = DataType::Long;
+                }
+            uint32_t num_elements = atoi(command_parameters[4].c_str());
+            allocateVariable(pid, var_name, type, num_elements, mmu, page_table);
+            }else{
+                std::cout << "error: process not found" << std::endl;
+            }
+
+
+            
+            /*
+            std::cout << "pid: " << pid << std::endl;
+            std::cout << "var_name: " << var_name << std::endl;
+            std::cout << "type: " << type << std::endl;
+            std::cout << "num_elements: " << num_elements << std::endl;
+            */
+
+            
 
         // Parse set() arguments
         } else if(command_parameters[0] == "set") {
@@ -157,7 +195,7 @@ void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table
     // Allocate <STACK> variable with a defined size of 65536
     allocateVariable(current_pid, "<STACK>", Char, 65536, mmu, page_table);
     // Print the current PID to the console
-    std::cout << current_pid;
+    std::cout << current_pid << std::endl;
 }
 
 /** [INCOMPLETE] Allocates memory on the heap (how much depends on the data type and the number of elements), then prints the virtual memory address **/
@@ -168,6 +206,88 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     //   - if no hole is large enough, allocate new page(s)
     //   - insert variable into MMU
     //   - print virtual memory address 
+
+    uint32_t theNewVariableSize;
+    int elementSize;
+    std::vector<Variable*> variables = mmu->getVariables(pid);
+    if(type == DataType::Char){
+        theNewVariableSize = num_elements * 1;
+        elementSize = 1;
+    }else if(type == DataType::Short){
+        theNewVariableSize = num_elements * 2;
+        elementSize = 2;
+    }else if(type == DataType::Int){
+        theNewVariableSize = num_elements * 4;
+        elementSize = 4;
+    }else if(type == DataType::Float){
+        theNewVariableSize = num_elements * 4;
+        elementSize = 4;
+    }else if(type == DataType::Double){
+        theNewVariableSize = num_elements * 8;
+        elementSize = 8;
+    }else if(type == DataType::Long){
+        theNewVariableSize = num_elements * 8;
+        elementSize = 8;
+    }
+
+    for(int i=0; i < variables.size(); i++){
+        //Check this if statement later, used var.name for mmu line(19)
+        if(variables[i]->name == "<FREE_SPACE>"){
+            uint32_t AddressOfFreeSpace = variables[i]->virtual_address;
+            uint32_t sizeOfFreeSpace = variables[i]->size;
+            int pageNumber = page_table->getPageNumber(AddressOfFreeSpace);
+
+            //check if there is enough space for the new elements
+            if(sizeOfFreeSpace >= theNewVariableSize){
+                uint32_t spaceLeftOnpage = mmu->getFreeSpaceLeftOnPage(pid, pageNumber, page_table->getPageSize(), AddressOfFreeSpace);
+                //check if the page fits the new variable
+                if(spaceLeftOnpage >= theNewVariableSize){
+                    variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
+                    variables[i]->virtual_address = AddressOfFreeSpace + theNewVariableSize;
+                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+                }else if(spaceLeftOnpage >= elementSize){
+                    while(spaceLeftOnpage%elementSize != 0){
+                        AddressOfFreeSpace++;
+                        sizeOfFreeSpace--;
+                    }
+                    if(sizeOfFreeSpace >= theNewVariableSize){
+                        variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
+                        variables[i]->virtual_address = AddressOfFreeSpace + theNewVariableSize;
+                        mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+                    }else{
+                        //the variables size is bigger than the new size of the free space
+
+                    }
+                }else if(spaceLeftOnpage < elementSize){
+                    while(page_table->getPageNumber(AddressOfFreeSpace) == pageNumber){
+                        AddressOfFreeSpace++;
+                        sizeOfFreeSpace--;
+                    }
+                    if(sizeOfFreeSpace >= theNewVariableSize){
+                        variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
+                        variables[i]->virtual_address = AddressOfFreeSpace + theNewVariableSize;
+                        mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+                    }else{
+                        //the variables size is bigger than the new size of the free space
+
+                    }
+                }
+
+            }
+
+
+
+
+        }
+    }
+
+
+    
+
+
+
+
+
 }
 
 /** [INCOMPLETE] Sets the value for a variable starting at an offset **/
@@ -175,7 +295,7 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
 {
     // TODO: implement this!
     //   - look up physical address for variable based on its virtual address / offset
-    page_table->getPhysicalAddress(pid, /** NEED VIRTUAL ADDRESS FROM allocate() **/);
+    //page_table->getPhysicalAddress(pid, /** NEED VIRTUAL ADDRESS FROM allocate() **/);
 
     //   - insert `value` into `memory` at physical address
     

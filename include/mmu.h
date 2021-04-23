@@ -32,6 +32,10 @@ public:
     uint32_t createProcess();
     void addVariableToProcess(uint32_t pid, std::string var_name, DataType type, uint32_t size, uint32_t address);
     void print();
+
+    bool findProcess(uint32_t pid);
+    std::vector<Variable*> getVariables(uint32_t pid);
+    int getFreeSpaceLeftOnPage(uint32_t pid, int page_number, int page_size, uint32_t address);
 };
 
 #endif // __MMU_H_

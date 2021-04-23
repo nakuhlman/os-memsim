@@ -69,3 +69,11 @@ void PageTable::print()
         // TODO: print all pages
     }
 }
+
+int PageTable::getPageSize(){
+    return _page_size;
+}
+
+int PageTable::getPageNumber(uint32_t address){
+    return address / _page_size;
+}

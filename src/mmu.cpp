@@ -65,3 +65,53 @@ void Mmu::print()
         }
     }
 }
+
+bool Mmu::findProcess(uint32_t pid){
+    for(int i=0; i < _processes.size(); i++){
+        if(_processes[i]->pid == pid){
+            return true;
+        }
+    }
+    return false;
+}
+
+std::vector<Variable*> Mmu::getVariables(uint32_t pid){
+    std::vector<Variable*> empty;
+    if(findProcess(pid)){
+        for(int i=0; i < _processes.size(); i++){
+            if(_processes[i]->pid == pid){
+                return _processes[i]->variables;
+            }
+        }
+    }else{
+        return empty;
+    }
+
+}
+
+int Mmu::getFreeSpaceLeftOnPage(uint32_t pid, int page_number, int page_size, uint32_t address){
+    int spaceLeft = page_size;
+    if(findProcess(pid)){
+        for(int i=0; i < _processes.size(); i++){
+            if(_processes[i]->pid == pid){
+                for(int j=0; j<_processes[i]->variables.size(); j++){
+                    int variable_pageNumber = _processes[i]->variables[j]->virtual_address / page_size;
+                    if(_processes[i]->variables[j]->name != "<FREE_SPACE>" && variable_pageNumber == page_number){
+                        spaceLeft = spaceLeft - _processes[i]->variables[j]->size;
+                    }
+                }
+            }
+        }
+
+        if(spaceLeft <= 0){
+            return 0;
+        }else{
+            return spaceLeft;
+        }
+
+
+
+    }else{
+        return 0;
+    }
+}
