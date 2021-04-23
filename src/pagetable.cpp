@@ -31,15 +31,18 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     // Combination of pid and page number act as the key to look up frame number
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
 
+    // Starting at frame 0, check mappings...
     int frame = 0; 
-    // Find free frame
-    // TODO: implement this!
-    
     for (std::map<std::string, int>::iterator it=_table.begin(); it!=_table.end(); ++it) {
-        if()
-        _table[entry] = frame;
-        frame++;
+        // Check and see if the current frame has been mapped to
+        if(it->second == frame) {
+            // If so, look at the next frame
+            frame++;
+        }
     }
+
+    // Once a free frame has been found, add the key-value pair
+    _table.insert(std::make_pair(entry, frame));
 }
 
 /** Calculates the physical address given a PID and a virtual address **/
@@ -78,9 +81,11 @@ void PageTable::print()
 
     std::vector<std::string> keys = sortedKeys();
 
+    // For all keys, in sorted order...
     for (i = 0; i < keys.size(); i++)
     {
-        std::cout << keys[i];
+        // Print the key (which includes the PID and Page Number) and also the value associated with that key (the Frame Number) 
+        std::cout << keys[i] << _table[keys[i]];
     }
 }
 
