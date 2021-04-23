@@ -1,4 +1,5 @@
 #include "pagetable.h"
+#include <cmath>
 
 PageTable::PageTable(int page_size)
 {
@@ -24,6 +25,7 @@ std::vector<std::string> PageTable::sortedKeys()
     return keys;
 }
 
+/** Adds an entry to the page table **/
 void PageTable::addEntry(uint32_t pid, int page_number)
 {
     // Combination of pid and page number act as the key to look up frame number
@@ -32,29 +34,41 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     int frame = 0; 
     // Find free frame
     // TODO: implement this!
-    _table[entry] = frame;
+    
+    for (std::map<std::string, int>::iterator it=_table.begin(); it!=_table.end(); ++it) {
+        if()
+        _table[entry] = frame;
+        frame++;
+    }
 }
 
+/** Calculates the physical address given a PID and a virtual address **/
 int PageTable::getPhysicalAddress(uint32_t pid, uint32_t virtual_address)
 {
-    // Convert virtual address to page_number and page_offset
-    // TODO: implement this!
-    int page_number = 0;
-    int page_offset = 0;
+    // Page offset can be found using modulus; page offset is the distance (in bytes) relative to the start of the page
+    int page_offset = virtual_address % _page_size;
+    // Call getPageNumber() to find the page number for the passed-in virtual address
+    int page_number = PageTable::getPageNumber(virtual_address);
 
-    // Combination of pid and page number act as the key to look up frame number
+    // Combination of pid and page number act as the key to look up frame number in the page table
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
     
-    // If entry exists, look up frame number and convert virtual to physical address
+    // If entry exists, look up frame number in the page table
     int address = -1;
-    if (_table.count(entry) > 0)
-    {
-        // TODO: implement this!
+    int frame_number = 0;
+    if (_table.count(entry) > 0) 
+    { 
+        frame_number = _table.at(entry); 
     }
 
+    // Physical address = [physical page number (a.k.a. frame number) * page size] + offset
+    address = (frame_number * _page_size) + page_offset;
+
+    // Return the physical address
     return address;
 }
 
+/** Prints all pages in the page table **/
 void PageTable::print()
 {
     int i;
@@ -66,14 +80,15 @@ void PageTable::print()
 
     for (i = 0; i < keys.size(); i++)
     {
-        // TODO: print all pages
+        std::cout << keys[i];
     }
 }
 
-int PageTable::getPageSize(){
-    return _page_size;
-}
+/** Getter method for the page size, defined by the user at program startup **/
+int PageTable::getPageSize(){ return _page_size; }
 
-int PageTable::getPageNumber(uint32_t address){
-    return address / _page_size;
+/** Calculates a page number using a virtual address and a page size **/
+int PageTable::getPageNumber(uint32_t address) {
+    // The page number is the number of pages counting up from 0
+    return floor(address / _page_size);
 }
