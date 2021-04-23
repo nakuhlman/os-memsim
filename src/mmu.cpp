@@ -57,11 +57,25 @@ void Mmu::print()
 
     std::cout << " PID  | Variable Name | Virtual Addr | Size" << std::endl;
     std::cout << "------+---------------+--------------+------------" << std::endl;
+
+    // For all processess...
     for (i = 0; i < _processes.size(); i++)
     {
+        // For each variable associated with the current process...
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
-            // TODO: print all variables (excluding <FREE_SPACE> entries)
+            // If the current variable is not a <FREE_SPACE> entry...
+            if(_processes[i]->variables[i]->name != "<FREE_SPACE>") 
+            {
+                // Print the PID of the process associated with the variable
+                std::cout << _processes[i]->pid << " ";
+                // Print the variable name
+                std::cout << _processes[i]->variables[i]->name << " ";
+                // Print the virtual address of the variable
+                std::cout << _processes[i]->variables[i]->virtual_address << " ";
+                // Print the size of the variable
+                std::cout << _processes[i]->variables[i]->size << " ";
+            }
         }
     }
 }
