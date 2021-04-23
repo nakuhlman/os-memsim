@@ -89,6 +89,12 @@ bool Mmu::findProcess(uint32_t pid){
     return false;
 }
 
+void Mmu::printProcesses(){
+    for(int i=0; i < _processes.size(); i++){
+        std::cout << _processes[i]->pid << std::endl;
+    }
+}
+
 std::vector<Variable*> Mmu::getVariables(uint32_t pid){
     std::vector<Variable*> empty;
     if(findProcess(pid)){
@@ -100,7 +106,7 @@ std::vector<Variable*> Mmu::getVariables(uint32_t pid){
     }else{
         return empty;
     }
-
+    return empty;
 }
 
 int Mmu::getFreeSpaceLeftOnPage(uint32_t pid, int page_number, int page_size, uint32_t address){

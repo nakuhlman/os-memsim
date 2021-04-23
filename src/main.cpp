@@ -129,6 +129,7 @@ int main(int argc, char **argv)
 
             } else if(object == "processes") {
                 // Print a list of PIDs for processes that are still running
+                mmu->printProcesses();
 
             } else {
                 // If <object> is a "<PID>:<var_name>", print the value of the variable for that process 
@@ -142,14 +143,14 @@ int main(int argc, char **argv)
 
 
                 } catch(const std::invalid_argument& ia) {
-                    std::cout << "error: command not recognized";
+                    std::cout << "error: command not recognized" << std::endl;
                 }
             }
             
 
         // Command not recognized
         } else {
-            std::cout << "error: command not recognized";
+            std::cout << "error: command not recognized" << std::endl;
         }
 
         // Get next command
@@ -206,10 +207,10 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     //   - if no hole is large enough, allocate new page(s)
     //   - insert variable into MMU
     //   - print virtual memory address 
-
     uint32_t theNewVariableSize;
     int elementSize;
     std::vector<Variable*> variables = mmu->getVariables(pid);
+
     if(type == DataType::Char){
         theNewVariableSize = num_elements * 1;
         elementSize = 1;
@@ -245,15 +246,26 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
                     variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
                     variables[i]->virtual_address = AddressOfFreeSpace + theNewVariableSize;
                     mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+                    if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
+                            std::cout << AddressOfFreeSpace << std::endl;
+                    }
+                    break;
                 }else if(spaceLeftOnpage >= elementSize){
+
                     while(spaceLeftOnpage%elementSize != 0){
                         AddressOfFreeSpace++;
                         sizeOfFreeSpace--;
                     }
+                    
                     if(sizeOfFreeSpace >= theNewVariableSize){
                         variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
                         variables[i]->virtual_address = AddressOfFreeSpace + theNewVariableSize;
                         mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+                        if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
+                            std::cout << AddressOfFreeSpace << std::endl;
+                        }
+                        
+                        break;
                     }else{
                         //the variables size is bigger than the new size of the free space
 
@@ -267,6 +279,11 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
                         variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
                         variables[i]->virtual_address = AddressOfFreeSpace + theNewVariableSize;
                         mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+
+                        if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
+                            std::cout << AddressOfFreeSpace << std::endl;
+                        }
+                        break;
                     }else{
                         //the variables size is bigger than the new size of the free space
 
@@ -277,9 +294,10 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
 
 
 
-
         }
-    }
+    }//end of for loop
+
+    
 
 
     

@@ -36,6 +36,7 @@ public:
     bool findProcess(uint32_t pid);
     std::vector<Variable*> getVariables(uint32_t pid);
     int getFreeSpaceLeftOnPage(uint32_t pid, int page_number, int page_size, uint32_t address);
+    void printProcesses();
 };
 
 #endif // __MMU_H_
