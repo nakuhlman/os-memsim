@@ -31,6 +31,7 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     // Combination of pid and page number act as the key to look up frame number
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
 
+    // Starting at frame 0, check mappings...
     int frame = 0; 
     // Find free frame
     // TODO: implement this!
@@ -72,9 +73,11 @@ void PageTable::print()
 
     std::vector<std::string> keys = sortedKeys();
 
+    // For all keys, in sorted order...
     for (i = 0; i < keys.size(); i++)
     {
-        std::cout << keys[i];
+        // Print the key (which includes the PID and Page Number) and also the value associated with that key (the Frame Number) 
+        std::cout << keys[i] << _table[keys[i]];
     }
 }
 
