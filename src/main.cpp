@@ -313,7 +313,6 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
 {
     // TODO: implement this!
     //   - look up physical address for variable based on its virtual address / offset
-    page_table->getPhysicalAddress(pid, );
 
     //   - insert `value` into `memory` at physical address
     
