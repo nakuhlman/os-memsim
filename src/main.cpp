@@ -268,6 +268,7 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
                         break;
                     }else{
                         //the variables size is bigger than the new size of the free space
+                        mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
 
                     }
                 }else if(spaceLeftOnpage < elementSize){
@@ -286,16 +287,17 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
                         break;
                     }else{
                         //the variables size is bigger than the new size of the free space
-
+                        mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
                     }
                 }
 
             }
-
+            
             page_table->addEntry(pid, pageNumber);
             
 
         }
+        mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, variables[i]->virtual_address);
     }//end of for loop
 
     

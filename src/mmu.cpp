@@ -65,16 +65,11 @@ void Mmu::print()
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
             // If the current variable is not a <FREE_SPACE> entry...
-            if(_processes[i]->variables[i]->name != "<FREE_SPACE>") 
+            //(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>") ???
+            if(_processes[i]->variables[j]->name != "<FREE_SPACE>") 
             {
-                // Print the PID of the process associated with the variable
-                std::cout << _processes[i]->pid << " ";
-                // Print the variable name
-                std::cout << _processes[i]->variables[i]->name << " ";
-                // Print the virtual address of the variable
-                std::cout << _processes[i]->variables[i]->virtual_address << " ";
-                // Print the size of the variable
-                std::cout << _processes[i]->variables[i]->size << " ";
+               printf("%5u | %-13.13s | %12X | %10u\n", _processes[i]->pid, _processes[i]->variables[j]->name.c_str(),
+                _processes[i]->variables[j]->virtual_address, _processes[i]->variables[j]->size);
             }
         }
     }
