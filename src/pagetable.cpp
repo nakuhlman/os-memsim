@@ -38,6 +38,30 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     _table[entry] = frame;
 }
 
+/** Adds an entry to the page table **/
+void PageTable::addEntry(uint32_t pid, int page_number)
+{
+    // Combination of pid and page number act as the key to look up frame number
+    std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
+
+    // Starting at frame 0, check mappings...
+    int frame = 0; 
+    for (std::map<std::string, int>::iterator it=_table.begin(); it!=_table.end(); ++it) {
+        // Check and see if the current frame has been mapped to
+        if(it->second == frame) {
+            // If so, look at the next frame
+            frame++;
+        }
+    }
+
+    // Once a free frame has been found, add the key-value pair
+    _table.insert(std::make_pair(entry, frame));
+}
+
+
+
+
+
 /** Calculates the physical address given a PID and a virtual address **/
 int PageTable::getPhysicalAddress(uint32_t pid, uint32_t virtual_address)
 {

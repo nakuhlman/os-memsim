@@ -1,6 +1,5 @@
 make --dry-run --always-make --keep-going --print-directory
 make: Entering directory '/home/nkuhlman/Desktop/CISC310/Programs/os-memsim'
- 
 g++ -std=c++11 -c -o obj/main.o src/main.cpp -I./include
 g++ -std=c++11 -c -o obj/mmu.o src/mmu.cpp -I./include
 g++ -std=c++11 -c -o obj/pagetable.o src/pagetable.cpp -I./include
