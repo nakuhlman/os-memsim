@@ -97,7 +97,6 @@ int main(int argc, char **argv)
 
         // Parse set() arguments
         } else if(command_parameters[0] == "set") {
-           
             uint32_t PID = std::stoi(command_parameters[1]);
             std::string var_name = command_parameters[2];
             uint32_t offset = std::stoi(command_parameters[3]);
@@ -126,6 +125,7 @@ int main(int argc, char **argv)
 
             } else if(object == "page") {
                 // Print the page table (do not need to print anything for free frames)
+                page_table->print();
 
             } else if(object == "processes") {
                 // Print a list of PIDs for processes that are still running
@@ -232,67 +232,78 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     }
 
     std::vector<Variable*> variables = mmu->getVariables(pid);
-
     for(int i=0; i < variables.size(); i++){
         //Look for free space and check if there is enough space for the new elements
         if(variables[i]->name == "<FREE_SPACE>" && variables[i]->size >= theNewVariableSize){
-            uint32_t AddressOfFreeSpace = variables[i]->virtual_address;
+            uint32_t addressOfFreeSpace = variables[i]->virtual_address;
             uint32_t sizeOfFreeSpace = variables[i]->size;
-            int pageNumber = page_table->getPageNumber(AddressOfFreeSpace);
-            uint32_t spaceLeftOnpage = mmu->getFreeSpaceLeftOnPage(pid, pageNumber, page_table->getPageSize(), AddressOfFreeSpace);
+            int pageNumber = page_table->getPageNumber(addressOfFreeSpace);
+            uint32_t spaceLeftOnpage = mmu->getFreeSpaceLeftOnPage(pid, pageNumber, page_table->getPageSize(), addressOfFreeSpace);
+
+            Variable *newVariable = variables[i];
+
             //check if the page fits the new variable
             if(spaceLeftOnpage >= theNewVariableSize){
                 variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
-                variables[i]->virtual_address = AddressOfFreeSpace + theNewVariableSize;
-                mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+                variables[i]->virtual_address = variables[i]->virtual_address + theNewVariableSize;
+
+                mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, newVariable->virtual_address);
+                uint32_t tempAddress = addressOfFreeSpace + theNewVariableSize - 1;
+                int endOfVariablePage = page_table->getPageNumber(tempAddress);
+
+                
+
+                if(!(endOfVariablePage-pageNumber) == 0){
+                    for(int i = pageNumber; i < endOfVariablePage; i++){
+                        page_table->addEntry(pid, i);
+                    }
+                }
+                
+                
                 if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
-                        std::cout << AddressOfFreeSpace << std::endl;
+                        std::cout << addressOfFreeSpace << std::endl;
                 }
                 break;
             }else if(spaceLeftOnpage >= elementSize){
 
                 while(spaceLeftOnpage%elementSize != 0){
-                    AddressOfFreeSpace++;
+                    addressOfFreeSpace++;
                     sizeOfFreeSpace--;
                 }
                     
                 if(sizeOfFreeSpace >= theNewVariableSize){
                     variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
-                    variables[i]->virtual_address = AddressOfFreeSpace + theNewVariableSize;
-                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+                    variables[i]->virtual_address = addressOfFreeSpace + theNewVariableSize;
+                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, addressOfFreeSpace);
                     if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
-                        std::cout << AddressOfFreeSpace << std::endl;
+                        std::cout << addressOfFreeSpace << std::endl;
                     }
                         
                     break;
                 }else{
                         //the variables size is bigger than the new size of the free space
-                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, addressOfFreeSpace);
 
                 }
             }else if(spaceLeftOnpage < elementSize){
-                while(page_table->getPageNumber(AddressOfFreeSpace) == pageNumber){
-                    AddressOfFreeSpace++;
+                while(page_table->getPageNumber(addressOfFreeSpace) == pageNumber){
+                    addressOfFreeSpace++;
                     sizeOfFreeSpace--;
                 }
                 if(sizeOfFreeSpace >= theNewVariableSize){
                     variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
-                    variables[i]->virtual_address = AddressOfFreeSpace + theNewVariableSize;
-                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+                    variables[i]->virtual_address = addressOfFreeSpace + theNewVariableSize;
+                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, addressOfFreeSpace);
 
                     if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
-                        std::cout << AddressOfFreeSpace << std::endl;
+                        std::cout << addressOfFreeSpace << std::endl;
                     }
                     break;
                 }else{
                         //the variables size is bigger than the new size of the free space
-                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, AddressOfFreeSpace);
+                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, addressOfFreeSpace);
                 }
             }
-            
-            page_table->addEntry(pid, pageNumber);
-            
-
         }
     }//end of for loop
 }
@@ -300,18 +311,22 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
 /** [INCOMPLETE] Sets the value for a variable starting at an offset **/
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
 {
+   
+    
     // TODO: implement this!
     //   - look up physical address for variable based on its virtual address / offset
-    Variable current_var = mmu->getVariable(pid, var_name, offset);
-    
-    uint32_t physical_address = page_table->getPhysicalAddress(pid, current_var.virtual_address);
-    std::cout << "current_var.name " << current_var.name << std::endl;
-    std::cout << "current_var.size " << current_var.size << std::endl;
-    
-    memcpy((uint8_t*)memory + physical_address, &value, current_var.size);
     //   - insert `value` into `memory` at physical address
     //   * note: this function only handles a single element (i.e. you'll need to call this within a loop when setting
     //           multiple elements of an array)
+    Variable current_var = mmu->getVariable(pid, var_name);
+
+    // physical_address = the variable address + the offset?
+    uint32_t physical_address = page_table->getPhysicalAddress(pid, current_var.virtual_address+offset);
+
+    std::cout << "current_var.name " << current_var.name << std::endl;
+    std::cout << "current_var.size " << current_var.size << std::endl;
+    
+    memcpy((uint32_t*)memory + physical_address, value, current_var.size);
 }
 
 /** [INCOMPLETE] Deallocates memory on the heap that is associated with a variable **/

@@ -85,7 +85,8 @@ void PageTable::print()
     for (i = 0; i < keys.size(); i++)
     {
         // Print the key (which includes the PID and Page Number) and also the value associated with that key (the Frame Number) 
-        std::cout << keys[i] << _table[keys[i]];
+        //std::cout << keys[i] << _table[keys[i]] << std::endl;
+        printf("%5s | %12u\n", keys[i].c_str(), _table[keys[i]]);
     }
 }
 
