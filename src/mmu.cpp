@@ -113,6 +113,7 @@ void Mmu::printProcesses(){
     }
 }
 
+
 std::vector<Variable*> Mmu::getVariables(uint32_t pid){
     std::vector<Variable*> empty;
     if(findProcess(pid)){
@@ -125,6 +126,22 @@ std::vector<Variable*> Mmu::getVariables(uint32_t pid){
         return empty;
     }
     return empty;
+}
+
+Variable Mmu::getVariable(uint32_t pid, std::string var_name, uint32_t offset) {
+    Variable empty;
+    if(findProcess(pid)){
+        for(int i=0; i < _processes.size(); i++){
+            if(_processes[i]->pid == pid) {
+                int j;
+                for(j = 0; j < offset; j++); { }
+                return *_processes[i]->variables[j];
+            }
+        }
+        return empty;
+    }else{
+        return empty;
+    }
 }
 
 int Mmu::getFreeSpaceLeftOnPage(uint32_t pid, int page_number, int page_size, uint32_t address){

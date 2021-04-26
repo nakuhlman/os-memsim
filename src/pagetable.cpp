@@ -45,7 +45,6 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     _table.insert(std::make_pair(entry, frame));
 }
 
-
 /** Calculates the physical address given a PID and a virtual address **/
 int PageTable::getPhysicalAddress(uint32_t pid, uint32_t virtual_address)
 {
