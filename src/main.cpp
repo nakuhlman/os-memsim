@@ -97,13 +97,14 @@ int main(int argc, char **argv)
 
         // Parse set() arguments
         } else if(command_parameters[0] == "set") {
+           
             uint32_t PID = std::stoi(command_parameters[1]);
             std::string var_name = command_parameters[2];
             uint32_t offset = std::stoi(command_parameters[3]);
-
+            
             // Call setVariable() for all n values passed in, starting from the 4th parameter and ending at the size of the vector
             for(int i = 4; i < command_parameters.size(); i++) {
-                setVariable(PID, var_name, offset, &command_parameters[i], mmu, page_table, memory);
+                setVariable(PID, var_name, offset, &command_parameters[i], mmu, page_table, &memory);
             }
 
         // Parse free() arguments
@@ -299,16 +300,6 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
         }
         mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, variables[i]->virtual_address);
     }//end of for loop
-
-    
-
-
-    
-
-
-
-
-
 }
 
 /** [INCOMPLETE] Sets the value for a variable starting at an offset **/
@@ -316,9 +307,12 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
 {
     // TODO: implement this!
     //   - look up physical address for variable based on its virtual address / offset
-
+    Variable current_var = mmu->getVariable(pid, var_name, offset);
+    std::cout << "HERE 2";
+    uint32_t physical_address = page_table->getPhysicalAddress(pid, current_var.virtual_address);
+    std::cout << "HERE 3";
+    memcpy((uint32_t*)memory + physical_address, value, current_var.size);
     //   - insert `value` into `memory` at physical address
-    
     //   * note: this function only handles a single element (i.e. you'll need to call this within a loop when setting
     //           multiple elements of an array) 
 }
