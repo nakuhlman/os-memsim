@@ -104,15 +104,18 @@ std::vector<Variable*> Mmu::getVariables(uint32_t pid){
     return empty;
 }
 
-Variable Mmu::getVariable(uint32_t pid, std::string var_name, uint32_t offset) {
-    std::cout << "HERE 1";
+Variable Mmu::getVariable(uint32_t pid, std::string var_name) {
     Variable empty;
     if(findProcess(pid)){
         for(int i=0; i < _processes.size(); i++){
             if(_processes[i]->pid == pid) {
                 int j;
-                for(j = 0; j < offset; j++); { }
-                return *_processes[i]->variables[j];
+                for(j = 0; j < _processes[i]->variables.size(); j++) { 
+                    if(_processes[i]->variables[j]->name == var_name) {
+                        return *_processes[i]->variables[j];
+                    }
+                }
+                return empty;
             }
         }
         return empty;
