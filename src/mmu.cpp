@@ -69,11 +69,9 @@ void Mmu::print()
             // If the current variable is not a <FREE_SPACE> entry...
             if(_processes[i]->variables[j]->name != "<FREE_SPACE>") 
             {
-                /*
                 std::stringstream ss;
-                ss << "0x" << std::setfill('0') << std::setw(8) << std::hex << _processes[i]->variables[j]->virtual_address;
+                ss << "  0x" << std::setfill('0') << std::setw(8) << std::uppercase << std::hex << _processes[i]->variables[j]->virtual_address;
                 std::string hex_virtual_address(ss.str());
-                */
 
                 printf("%5u | %-13.13s | %s | %10u\n", _processes[i]->pid, _processes[i]->variables[j]->name.c_str(),
                 hex_virtual_address.c_str(), _processes[i]->variables[j]->size);
@@ -92,7 +90,7 @@ bool Mmu::removeProcess(uint32_t pid) {
     return false;
 }
 
-bool Mmu::removeProcess(uint32_t pid) {
+bool Mmu::findProcess(uint32_t pid){
     for(int i=0; i < _processes.size(); i++){
         if(_processes[i]->pid == pid){
             return true;
@@ -143,6 +141,25 @@ std::vector<Variable*> Mmu::getVariables(uint32_t pid){
         return empty;
     }
     return empty;
+}
+
+bool Mmu::findVariable(uint32_t pid, std::string var_name) {
+    if(findProcess(pid)){
+        for(int i=0; i < _processes.size(); i++){
+            if(_processes[i]->pid == pid) {
+                int j;
+                for(j = 0; j < _processes[i]->variables.size(); j++) { 
+                    if(_processes[i]->variables[j]->name == var_name) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+        return false;
+    }else{
+        return false;
+    }
 }
 
 Variable Mmu::getVariable(uint32_t pid, std::string var_name) {

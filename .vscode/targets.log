@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Mon Apr 26 19:33:18 2021
+# Make data base, printed on Tue Apr 27 01:06:27 2021
 
 # Variables
 
@@ -116,7 +116,6 @@ VSCODE_CRASH_REPORTER_START_OPTIONS = {"companyName":"Microsoft","productName":"
 INVOCATION_ID = a5919bf3db884b43a8d0f46021053864
 # environment
 GDK_PIXBUF_MODULEDIR = /snap/code/62/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
- 
 # makefile (from 'Makefile', line 5)
 LIB = 
 # default
@@ -128,7 +127,7 @@ XDG_SESSION_DESKTOP = ubuntu
 # environment
 SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 2399
+GIO_LAUNCHED_DESKTOP_FILE_PID = 15463
 # automatic
 %F = $(notdir $%)
 # environment
@@ -194,7 +193,7 @@ BINDIR = bin
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-17cb4022-21e6-4ebd-a205-df5609ef7e51.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-7a148c53-b26b-460d-bce4-3cbc26d15e35.sock
 # makefile (from 'Makefile', line 12)
 EXEC = $(addprefix $(BINDIR)/, memsim)
 # default
@@ -278,9 +277,10 @@ GJS_DEBUG_OUTPUT = stderr
 # environment
 LANG = en_US.UTF-8
 # environment
-VSCODE_PID = 2443
+VSCODE_PID = 15508
+ 
 # variable set hash-table stats:
-# Load=134/1024=13%, Rehash=0, Collisions=26/172=15%
+# Load=134/1024=13%, Rehash=0, Collisions=27/178=15%
 
 # Pattern-specific Variable Values
 
@@ -289,9 +289,9 @@ VSCODE_PID = 2443
 # Directories
 
 # . (device 2053, inode 3675791): 11 files, no impossibilities.
-# src (device 2053, inode 3686120): 5 files, no impossibilities so far.
+# src (device 2053, inode 3686120): 4 files, no impossibilities so far.
 
-# 16 files, no impossibilities in 2 directories.
+# 15 files, no impossibilities in 2 directories.
 
 # Implicit Rules
 
@@ -308,21 +308,34 @@ all: bin/memsim
 #  Implicit rule search has been done.
 #  File does not exist.
 #  File has been updated.
-#  Successfully updated.
-
-# Not a target:
-src/pagetable.cpp:
-#  Implicit rule search has been done.
-#  Last modified 2021-04-25 22:56:13.697208609
-#  File has been updated.
-#  Successfully updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/6=0%
 
 obj/main.o: src/main.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: 'main'
-#  Last modified 2021-04-25 22:58:28.573870538
+#  Last modified 2021-04-27 00:53:40.892854335
 #  File has been updated.
-#  Successfully updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := obj/main.o
+# automatic
+# % := 
+# automatic
+# * := main
+# automatic
+# + := src/main.cpp
+# automatic
+# | := 
+# automatic
+# < := src/main.cpp
+# automatic
+# ^ := src/main.cpp
+# automatic
+# ? := src/main.cpp
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=2/16=12%
 #  recipe to execute (from 'Makefile', line 25):
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDE)
 
@@ -330,13 +343,6 @@ obj/main.o: src/main.cpp
 Makefile:
 #  Implicit rule search has been done.
 #  Last modified 2021-04-19 17:07:05.726741762
-#  File has been updated.
-#  Successfully updated.
-
-# Not a target:
-src/mmu.cpp:
-#  Implicit rule search has been done.
-#  Last modified 2021-04-25 22:56:09.997208609
 #  File has been updated.
 #  Successfully updated.
 
@@ -353,54 +359,49 @@ clean:
 #  recipe to execute (from 'Makefile', line 30):
 	rm -f $(OBJS) $(EXEC)
 
-obj/pagetable.o: src/pagetable.cpp
-#  Implicit rule search has been done.
-#  Implicit/static pattern stem: 'pagetable'
-#  Last modified 2021-04-25 22:58:29.681870538
-#  File has been updated.
-#  Successfully updated.
-#  recipe to execute (from 'Makefile', line 25):
-	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDE)
+# Not a target:
+obj/pagetable.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 # Not a target:
 src/main.cpp:
 #  Implicit rule search has been done.
-#  Last modified 2021-04-25 22:57:56.228570181
+#  Last modified 2021-04-27 01:06:27.495832196
 #  File has been updated.
 #  Successfully updated.
 
 bin/memsim: obj/main.o obj/mmu.o obj/pagetable.o
 #  Implicit rule search has not been done.
-#  Last modified 2021-04-25 22:58:29.769870538
+#  Last modified 2021-04-27 00:53:41.008854335
 #  File has been updated.
-#  Successfully updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/6=0%
 #  recipe to execute (from 'Makefile', line 22):
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIB)
 
-obj/mmu.o: src/mmu.cpp
-#  Implicit rule search has been done.
-#  Implicit/static pattern stem: 'mmu'
-#  Last modified 2021-04-25 22:58:29.001870538
-#  File has been updated.
-#  Successfully updated.
-#  recipe to execute (from 'Makefile', line 25):
-	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDE)
+# Not a target:
+obj/mmu.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 # files hash-table stats:
-# Load=12/1024=1%, Rehash=0, Collisions=0/37=0%
+# Load=10/1024=1%, Rehash=0, Collisions=0/29=0%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 32 / storage = 285 B / avg = 8 B
-# current buf: size = 8162 B / used = 285 B / count = 32 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 27 / storage = 233 B / avg = 8 B
+# current buf: size = 8162 B / used = 233 B / count = 27 / avg = 8 B
 
-# strcache performance: lookups = 47 / hit rate = 31%
- 
+# strcache performance: lookups = 40 / hit rate = 32%
 # hash-table stats:
-# Load=32/8192=0%, Rehash=0, Collisions=2/47=4%
-# Finished Make data base on Mon Apr 26 19:33:18 2021
+# Load=27/8192=0%, Rehash=0, Collisions=2/40=5%
+# Finished Make data base on Tue Apr 27 01:06:27 2021
 
  

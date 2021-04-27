@@ -82,10 +82,14 @@ void PageTable::print()
 
     // For all keys, in sorted order...
     for (i = 0; i < keys.size(); i++)
-    {
+    {   
+        // Format the current key-value pair for printing
+        keys[i].insert(4, " ");
+        if(stoi(keys[i].substr(6)) < 10) { keys[i].insert(6, "           "); }
+        else { keys[i].insert(6, "          "); }
+
         // Print the key (which includes the PID and Page Number) and also the value associated with that key (the Frame Number) 
-        //std::cout << keys[i] << _table[keys[i]] << std::endl;
-        printf("%5s | %12u\n", keys[i].c_str(), _table[keys[i]]);
+        printf(" %5s | %12u\n", keys[i].c_str(), _table[keys[i]]);
     }
 }
 
