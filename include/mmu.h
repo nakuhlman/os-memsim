@@ -37,8 +37,8 @@ public:
     bool checkTotalSpace(uint32_t pid);
     std::vector<Variable*> getVariables(uint32_t pid);
     int getFreeSpaceLeftOnPage(uint32_t pid, int page_number, int page_size, uint32_t address);
-    Variable getVariable(uint32_t pid, std::string var_name);
     bool removeProcess(uint32_t pid);
+    Variable getVariable(uint32_t pid, std::string var_name);
     void printProcesses();
 };
 
