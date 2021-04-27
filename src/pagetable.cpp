@@ -92,6 +92,16 @@ void PageTable::print()
 /** Getter method for the page size, defined by the user at program startup **/
 int PageTable::getPageSize(){ return _page_size; }
 
+void PageTable::freePagesOfProcess(uint32_t pid) {
+    std::vector<std::string> keys = sortedKeys();
+    for (int i = 0; i < keys.size(); i++)
+    {
+        if(std::to_string(pid).find(keys[i]) != std::string::npos) {
+            _table.erase(keys[i]);
+        }
+    }
+}
+
 /** Calculates a page number using a virtual address and a page size **/
 int PageTable::getPageNumber(uint32_t address) {
     // The page number is the number of pages counting up from 0

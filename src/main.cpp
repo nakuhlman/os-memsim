@@ -35,6 +35,7 @@ int main(int argc, char **argv)
     // Create MMU and Page Table
     Mmu *mmu = new Mmu(mem_size);
     PageTable *page_table = new PageTable(page_size);
+    
 
     // Prompt loop
     std::string command;
@@ -199,7 +200,7 @@ void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table
     std::cout << current_pid << std::endl;
 }
 
-/** [INCOMPLETE] Allocates memory on the heap (how much depends on the data type and the number of elements), then prints the virtual memory address **/
+/** [ALMOST DONE] Allocates memory on the heap (how much depends on the data type and the number of elements), then prints the virtual memory address **/
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table)
 {
     // TODO: implement this!
@@ -250,13 +251,14 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
                 uint32_t tempAddress = addressOfFreeSpace + theNewVariableSize - 1;
                 int endOfVariablePage = page_table->getPageNumber(tempAddress);
 
-                if(!(endOfVariablePage-pageNumber) == 0 || endOfVariablePage-pageNumber < 0){
-                    for(int i = pageNumber; i < endOfVariablePage; i++){
-                        page_table->addEntry(pid, i);
+                if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
+                    int i = 0;
+                    while (i <= endOfVariablePage){
+                        page_table->addEntry(pid,i);
+                        i++;
                     }
                 }
-                
-                
+
                 if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
                         std::cout << addressOfFreeSpace << std::endl;
                 }
@@ -274,11 +276,15 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
 
                     uint32_t tempAddress = addressOfFreeSpace + theNewVariableSize - 1;
                     int endOfVariablePage = page_table->getPageNumber(tempAddress);
-                    if(!(endOfVariablePage-pageNumber) == 0 || endOfVariablePage-pageNumber < 0){
-                        for(int i = pageNumber; i < endOfVariablePage; i++){
-                            page_table->addEntry(pid, i);
+
+                    if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
+                        int i = 0;
+                        while (i <= endOfVariablePage){
+                            page_table->addEntry(pid,i);
+                            i++;
                         }
                     }
+                    
                     if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
                         std::cout << addressOfFreeSpace << std::endl;
                     }
@@ -300,9 +306,13 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
 
                     uint32_t tempAddress = addressOfFreeSpace + theNewVariableSize - 1;
                     int endOfVariablePage = page_table->getPageNumber(tempAddress);
-                    if(!(endOfVariablePage-pageNumber) == 0 || endOfVariablePage-pageNumber < 0){
-                        for(int i = pageNumber; i < endOfVariablePage; i++){
-                            page_table->addEntry(pid, i);
+
+
+                    if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
+                        int i = 0;
+                        while (i <= endOfVariablePage){
+                            page_table->addEntry(pid,i);
+                            i++;
                         }
                     }
 
@@ -319,7 +329,7 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     }//end of for loop
 }
 
-/** [INCOMPLETE] Sets the value for a variable starting at an offset **/
+/** [ALMOST DONE] Sets the value for a variable starting at an offset **/
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
 {
    
@@ -330,13 +340,8 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
     //   * note: this function only handles a single element (i.e. you'll need to call this within a loop when setting
     //           multiple elements of an array)
     Variable current_var = mmu->getVariable(pid, var_name);
-
     // physical_address = the variable address + the offset?
     uint32_t physical_address = page_table->getPhysicalAddress(pid, current_var.virtual_address+offset);
-
-    std::cout << "current_var.name " << current_var.name << std::endl;
-    std::cout << "current_var.size " << current_var.size << std::endl;
-    
     memcpy((uint32_t*)memory + physical_address, value, current_var.size);
 }
 
@@ -352,13 +357,14 @@ void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_
     // Check if either the variable just before it and/or just after it are also free space - if so merge them into one larger free space
 }
 
-/** [INCOMPLETE] Kills the specified process and frees all memory associated with it **/
+/** [DONE] Kills the specified process and frees all memory associated with it **/
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table)
 {
     // TODO: implement this!
     //   - remove process from MMU
-
+    mmu->removeProcess(pid);
     //   - free all pages associated with given process
+    page_table->freePagesOfProcess(pid);
 }
 
 /** splitString function imported from assignment 2 - splits a string based on a delimiter and stores the result in a vector **/
