@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sun Apr 25 20:23:30 2021
+# Make data base, printed on Mon Apr 26 19:33:18 2021
 
 # Variables
 
@@ -49,7 +49,7 @@ SNAP_DATA = /var/snap/code/62
 # environment
 VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
 # environment
-JOURNAL_STREAM = 8:33777
+JOURNAL_STREAM = 8:32672
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # environment
@@ -77,7 +77,7 @@ _ = /snap/code/62/usr/share/code/code
 # makefile (from 'Makefile', line 11)
 OBJS = $(addprefix $(OBJDIR)/, main.o mmu.o pagetable.o)
 # environment
-MANAGERPID = 1310
+MANAGERPID = 1309
 # environment
 CLUTTER_IM_MODULE = ibus
 # environment
@@ -95,7 +95,7 @@ PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/CISC310-VM:@/tmp/.ICE-unix/1682,unix/CISC310-VM:/tmp/.ICE-unix/1682
+SESSION_MANAGER = local/CISC310-VM:@/tmp/.ICE-unix/1684,unix/CISC310-VM:/tmp/.ICE-unix/1684
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
@@ -113,9 +113,10 @@ DISABLE_WAYLAND = 1
 # environment
 VSCODE_CRASH_REPORTER_START_OPTIONS = {"companyName":"Microsoft","productName":"VSCode","submitURL":"appcenter://code?aid=fba07a4d-84bd-4fc8-a125-9640fc8ce171&uid=010be0dd-024b-47e9-a451-94b07cce4f40&iid=010be0dd-024b-47e9-a451-94b07cce4f40&sid=010be0dd-024b-47e9-a451-94b07cce4f40","uploadToServer":true}
 # environment
-INVOCATION_ID = 06e2a132df194940a389ee423cfd7ff9
+INVOCATION_ID = a5919bf3db884b43a8d0f46021053864
 # environment
 GDK_PIXBUF_MODULEDIR = /snap/code/62/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
+ 
 # makefile (from 'Makefile', line 5)
 LIB = 
 # default
@@ -127,7 +128,7 @@ XDG_SESSION_DESKTOP = ubuntu
 # environment
 SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 2092
+GIO_LAUNCHED_DESKTOP_FILE_PID = 2399
 # automatic
 %F = $(notdir $%)
 # environment
@@ -145,7 +146,7 @@ PWD = /home/nkuhlman/Desktop/CISC310/Programs/os-memsim
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 1527
+SSH_AGENT_PID = 1528
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
 # environment
@@ -193,7 +194,7 @@ BINDIR = bin
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-e81604cc-2fb8-4128-abf0-23804c4245a2.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-17cb4022-21e6-4ebd-a205-df5609ef7e51.sock
 # makefile (from 'Makefile', line 12)
 EXEC = $(addprefix $(BINDIR)/, memsim)
 # default
@@ -277,8 +278,7 @@ GJS_DEBUG_OUTPUT = stderr
 # environment
 LANG = en_US.UTF-8
 # environment
-VSCODE_PID = 2392
- 
+VSCODE_PID = 2443
 # variable set hash-table stats:
 # Load=134/1024=13%, Rehash=0, Collisions=26/172=15%
 
@@ -313,14 +313,14 @@ all: bin/memsim
 # Not a target:
 src/pagetable.cpp:
 #  Implicit rule search has been done.
-#  Last modified 2021-04-25 17:14:33.223388455
+#  Last modified 2021-04-25 22:56:13.697208609
 #  File has been updated.
 #  Successfully updated.
 
 obj/main.o: src/main.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: 'main'
-#  Last modified 2021-04-25 20:14:56.921
+#  Last modified 2021-04-25 22:58:28.573870538
 #  File has been updated.
 #  Successfully updated.
 #  recipe to execute (from 'Makefile', line 25):
@@ -336,7 +336,7 @@ Makefile:
 # Not a target:
 src/mmu.cpp:
 #  Implicit rule search has been done.
-#  Last modified 2021-04-25 19:20:14.132628628
+#  Last modified 2021-04-25 22:56:09.997208609
 #  File has been updated.
 #  Successfully updated.
 
@@ -356,7 +356,7 @@ clean:
 obj/pagetable.o: src/pagetable.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: 'pagetable'
-#  Last modified 2021-04-25 17:14:40.024997793
+#  Last modified 2021-04-25 22:58:29.681870538
 #  File has been updated.
 #  Successfully updated.
 #  recipe to execute (from 'Makefile', line 25):
@@ -365,13 +365,13 @@ obj/pagetable.o: src/pagetable.cpp
 # Not a target:
 src/main.cpp:
 #  Implicit rule search has been done.
-#  Last modified 2021-04-25 19:20:16.067124225
+#  Last modified 2021-04-25 22:57:56.228570181
 #  File has been updated.
 #  Successfully updated.
 
 bin/memsim: obj/main.o obj/mmu.o obj/pagetable.o
 #  Implicit rule search has not been done.
-#  Last modified 2021-04-25 20:14:57.065
+#  Last modified 2021-04-25 22:58:29.769870538
 #  File has been updated.
 #  Successfully updated.
 #  recipe to execute (from 'Makefile', line 22):
@@ -380,7 +380,7 @@ bin/memsim: obj/main.o obj/mmu.o obj/pagetable.o
 obj/mmu.o: src/mmu.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: 'mmu'
-#  Last modified 2021-04-25 19:20:18.643124225
+#  Last modified 2021-04-25 22:58:29.001870538
 #  File has been updated.
 #  Successfully updated.
 #  recipe to execute (from 'Makefile', line 25):
@@ -398,8 +398,9 @@ obj/mmu.o: src/mmu.cpp
 # current buf: size = 8162 B / used = 285 B / count = 32 / avg = 8 B
 
 # strcache performance: lookups = 47 / hit rate = 31%
+ 
 # hash-table stats:
 # Load=32/8192=0%, Rehash=0, Collisions=2/47=4%
-# Finished Make data base on Sun Apr 25 20:23:30 2021
+# Finished Make data base on Mon Apr 26 19:33:18 2021
 
  

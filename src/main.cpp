@@ -199,7 +199,7 @@ void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table
     std::cout << current_pid << std::endl;
 }
 
-/** [INCOMPLETE] Allocates memory on the heap (how much depends on the data type and the number of elements), then prints the virtual memory address **/
+/** [ALMOST DONE] Allocates memory on the heap (how much depends on the data type and the number of elements), then prints the virtual memory address **/
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table)
 {
     // TODO: implement this!
@@ -301,7 +301,7 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     }//end of for loop
 }
 
-/** [INCOMPLETE] Sets the value for a variable starting at an offset **/
+/** [ALMOST DONE] Sets the value for a variable starting at an offset **/
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
 {
    
@@ -331,13 +331,14 @@ void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_
     // Check if either the variable just before it and/or just after it are also free space - if so merge them into one larger free space
 }
 
-/** [INCOMPLETE] Kills the specified process and frees all memory associated with it **/
+/** [DONE] Kills the specified process and frees all memory associated with it **/
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table)
 {
     // TODO: implement this!
     //   - remove process from MMU
-
+    mmu->removeProcess(pid);
     //   - free all pages associated with given process
+    page_table->freePagesOfProcess(pid);
 }
 
 /** splitString function imported from assignment 2 - splits a string based on a delimiter and stores the result in a vector **/

@@ -84,6 +84,16 @@ bool Mmu::findProcess(uint32_t pid){
     return false;
 }
 
+bool Mmu::removeProcess(uint32_t pid) {
+    for(int i=0; i < _processes.size(); i++){
+        if(_processes[i]->pid == pid) {
+            _processes.erase(_processes.begin() + i);
+            return true;
+        }
+    }
+    return false;
+}
+
 void Mmu::printProcesses(){
     for(int i=0; i < _processes.size(); i++){
         std::cout << _processes[i]->pid << std::endl;
