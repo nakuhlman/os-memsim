@@ -52,7 +52,6 @@ int PageTable::getPhysicalAddress(uint32_t pid, uint32_t virtual_address)
     int page_offset = virtual_address % _page_size;
     // Call getPageNumber() to find the page number for the passed-in virtual address
     int page_number = PageTable::getPageNumber(virtual_address);
-
     // Combination of pid and page number act as the key to look up frame number in the page table
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
     
