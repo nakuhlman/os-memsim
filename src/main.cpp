@@ -13,6 +13,7 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table);
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
 void splitString(std::string text, char d, std::vector<std::string>& result);
+int element_size(DataType type);
 /** Main function **/
 
 int main(int argc, char **argv)
@@ -98,6 +99,7 @@ int main(int argc, char **argv)
 
         // Parse set() arguments
         } else if(command_parameters[0] == "set") {
+
             uint32_t PID = std::stoi(command_parameters[1]);
             std::string var_name = command_parameters[2];
             uint32_t offset = std::stoi(command_parameters[3]);
@@ -139,6 +141,7 @@ int main(int argc, char **argv)
                 try {
                     uint32_t PID = std::stoi(print_process_arguments[0]);
                     std::string var_name = print_process_arguments[1];
+
 
                     // Print the value of the variable var_name for process PID
 
@@ -185,7 +188,7 @@ void printStartMessage(int page_size)
     std::cout << std::endl;
 }
 
-/** [DONE] Initializes a new process and prints its PID **/
+/** Initializes a new process and prints its PID **/
 void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table)
 {
     // Create a new process in the MMU using the MMU's createProcess() method, which returns the current PID
@@ -200,37 +203,15 @@ void createProcess(int text_size, int data_size, Mmu *mmu, PageTable *page_table
     std::cout << current_pid << std::endl;
 }
 
-/** [ALMOST DONE] Allocates memory on the heap (how much depends on the data type and the number of elements), then prints the virtual memory address **/
+/** Allocates memory on the heap (how much depends on the data type and the number of elements), then prints the virtual memory address **/
 void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table)
 {
-    // TODO: implement this!
-    //   - find first free space within a page already allocated to this process that is large enough to fit the new variable
-    //   - if no hole is large enough, allocate new page(s)
-    //   - insert variable into MMU
-    //   - print virtual memory address 
     uint32_t theNewVariableSize;
     int elementSize;
-    
 
-    if(type == DataType::Char){
-        theNewVariableSize = num_elements * 1;
-        elementSize = 1;
-    }else if(type == DataType::Short){
-        theNewVariableSize = num_elements * 2;
-        elementSize = 2;
-    }else if(type == DataType::Int){
-        theNewVariableSize = num_elements * 4;
-        elementSize = 4;
-    }else if(type == DataType::Float){
-        theNewVariableSize = num_elements * 4;
-        elementSize = 4;
-    }else if(type == DataType::Double){
-        theNewVariableSize = num_elements * 8;
-        elementSize = 8;
-    }else if(type == DataType::Long){
-        theNewVariableSize = num_elements * 8;
-        elementSize = 8;
-    }
+    theNewVariableSize = element_size(type) * num_elements;
+    elementSize = element_size(type);
+    
 
     std::vector<Variable*> variables = mmu->getVariables(pid);
     for(int i=0; i < variables.size(); i++){
@@ -328,7 +309,7 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
     }//end of for loop
 }
 
-/** [ALMOST DONE] Sets the value for a variable starting at an offset **/
+/** Sets the value for a variable starting at an offset **/
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
 {
     // TODO: implement this!
@@ -336,31 +317,57 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
     //   - insert `value` into `memory` at physical address
     //   * note: this function only handles a single element (i.e. you'll need to call this within a loop when setting
     //           multiple elements of an array)
-    Variable current_var = mmu->getVariable(pid, var_name);
-    uint32_t physical_address = page_table->getPhysicalAddress(pid, current_var.virtual_address+offset);
-    memcpy((uint8_t*)memory + physical_address, value, current_var.size);
+    // Check if the pid exists, if not, print an error and do nothing
+    if(!mmu->findProcess(pid)) {
+        std::cout << "error: process not found" << std::endl;
+        return;
+    }
+
+    if(!mmu->findVariable(pid, var_name)) {
+        std::cout << "error: variable not found" << std::endl;
+        return;
+    }
+    Variable* current_var = mmu->getVariable(pid, var_name);
+    int physical_address = page_table->getPhysicalAddress(pid, current_var->virtual_address+offset);
+    uint32_t elementSize = element_size(current_var->type);
+    memcpy((uint8_t*)memory + physical_address, (uint8_t*)value, elementSize);
+    uint32_t input = *((uint32_t*)memory + 10);
+
+    std::cout << "value: " << *(uint32_t*)value << std::endl;
 
 }
 
-/** [INCOMPLETE] Deallocates memory on the heap that is associated with a variable **/
+/** Deallocates memory on the heap that is associated with a variable **/
 void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_table)
 {
-    // TODO: implement this!
-    //   - remove entry from MMU
-    //   - free page if this variable was the only one on a given page
+    // Check if the pid exists, if not, print an error and do nothing
+    if(!mmu->findProcess(pid)) {
+        std::cout << "error: process not found" << std::endl;
+        return;
+    }
 
-    // Change the variable name and type to represent free space
+    // Check if variable exists, if not, print and error and do nothing
+    if(!mmu->findVariable(pid, var_name)) {
+        std::cout << "error: variable not found" << std::endl;
+        return;
+    }
+
+    // Remove entry from MMU by by changing the variable name and type to represent free space (using set()?)
 
     // Check if either the variable just before it and/or just after it are also free space - if so merge them into one larger free space
 }
 
-/** [DONE] Kills the specified process and frees all memory associated with it **/
+/** Kills the specified process and frees all memory associated with it **/
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table)
 {
-    // TODO: implement this!
-    //   - remove process from MMU
+    // If the process does not exist, display a message and do nothing
+    if(mmu->findProcess(pid) == false) {
+        std::cout << "error: process not found" << std::endl;
+        return;
+    }
+    // Otherwise, remove the process from MMU
     mmu->removeProcess(pid);
-    //   - free all pages associated with given process
+    // Also free all pages associated with given process
     page_table->freePagesOfProcess(pid);
 }
 
@@ -418,4 +425,22 @@ void splitString(std::string text, char d, std::vector<std::string>& result)
     {
         result.push_back(token);
     }
+}
+
+int element_size(DataType type){
+    int elementSize = 0;
+    if(type == DataType::Char){
+        elementSize = 1;
+    }else if(type == DataType::Short){
+        elementSize = 2;
+    }else if(type == DataType::Int){
+        elementSize = 4;
+    }else if(type == DataType::Float){
+        elementSize = 4;
+    }else if(type == DataType::Double){
+        elementSize = 8;
+    }else if(type == DataType::Long){
+        elementSize = 8;
+    }
+    return elementSize;
 }

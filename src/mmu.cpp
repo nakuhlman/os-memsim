@@ -1,4 +1,6 @@
 #include "mmu.h"
+#include <sstream>
+#include <iomanip>
 
 Mmu::Mmu(int memory_size)
 {
@@ -67,20 +69,15 @@ void Mmu::print()
             // If the current variable is not a <FREE_SPACE> entry...
             if(_processes[i]->variables[j]->name != "<FREE_SPACE>") 
             {
-               printf("%5u | %-13.13s | %12X | %10u\n", _processes[i]->pid, _processes[i]->variables[j]->name.c_str(),
-                _processes[i]->variables[j]->virtual_address, _processes[i]->variables[j]->size);
+                std::stringstream ss;
+                ss << "  0x" << std::setfill('0') << std::setw(8) << std::uppercase << std::hex << _processes[i]->variables[j]->virtual_address;
+                std::string hex_virtual_address(ss.str());
+
+                printf("%5u | %-13.13s | %s | %10u\n", _processes[i]->pid, _processes[i]->variables[j]->name.c_str(),
+                hex_virtual_address.c_str(), _processes[i]->variables[j]->size);
             }
         }
     }
-}
-
-bool Mmu::findProcess(uint32_t pid){
-    for(int i=0; i < _processes.size(); i++){
-        if(_processes[i]->pid == pid){
-            return true;
-        }
-    }
-    return false;
 }
 
 bool Mmu::removeProcess(uint32_t pid) {
@@ -93,12 +90,44 @@ bool Mmu::removeProcess(uint32_t pid) {
     return false;
 }
 
+bool Mmu::findProcess(uint32_t pid){
+    for(int i=0; i < _processes.size(); i++){
+        if(_processes[i]->pid == pid){
+            return true;
+        }
+    }
+    return false;
+}
+
+//This function check the total space left on the process before adding new variable
+bool Mmu::checkTotalSpace(uint32_t newVariableSize){
+    //uint32_t mem_size = 67108864;
+    uint32_t mem_size = _max_size;
+    uint32_t totalSpaceUsed = newVariableSize;
+        // For all processess...
+    for (int i = 0; i < _processes.size(); i++)
+    {
+        // For each variable associated with the current process...
+        for (int j = 0; j < _processes[i]->variables.size(); j++)
+        {
+            if(_processes[i]->variables[j]->name != "<FREE_SPACE>") 
+            {
+               totalSpaceUsed = totalSpaceUsed + _processes[i]->variables[j]->size;
+            }
+        }
+    }
+    if(totalSpaceUsed > mem_size){
+        return false;
+    }else{
+        return true;
+    }
+}
+
 void Mmu::printProcesses(){
     for(int i=0; i < _processes.size(); i++){
         std::cout << _processes[i]->pid << std::endl;
     }
 }
-
 
 std::vector<Variable*> Mmu::getVariables(uint32_t pid){
     std::vector<Variable*> empty;
@@ -114,15 +143,34 @@ std::vector<Variable*> Mmu::getVariables(uint32_t pid){
     return empty;
 }
 
-Variable Mmu::getVariable(uint32_t pid, std::string var_name) {
-    Variable empty;
+bool Mmu::findVariable(uint32_t pid, std::string var_name) {
     if(findProcess(pid)){
         for(int i=0; i < _processes.size(); i++){
             if(_processes[i]->pid == pid) {
                 int j;
                 for(j = 0; j < _processes[i]->variables.size(); j++) { 
                     if(_processes[i]->variables[j]->name == var_name) {
-                        return *_processes[i]->variables[j];
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+        return false;
+    }else{
+        return false;
+    }
+}
+
+Variable* Mmu::getVariable(uint32_t pid, std::string var_name) {
+    Variable* empty = NULL;
+    if(findProcess(pid)){
+        for(int i=0; i < _processes.size(); i++){
+            if(_processes[i]->pid == pid) {
+                int j;
+                for(j = 0; j < _processes[i]->variables.size(); j++) { 
+                    if(_processes[i]->variables[j]->name == var_name) {
+                        return _processes[i]->variables[j];
                     }
                 }
                 return empty;
