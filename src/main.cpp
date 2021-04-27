@@ -104,7 +104,7 @@ int main(int argc, char **argv)
             
             // Call setVariable() for all n values passed in, starting from the 4th parameter and ending at the size of the vector
             for(int i = 4; i < command_parameters.size(); i++) {
-                setVariable(PID, var_name, offset, &command_parameters[i], mmu, page_table, &memory);
+                setVariable(PID, var_name, offset, &command_parameters[i], mmu, page_table, memory);
             }
         // Parse free() arguments
         } else if(command_parameters[0] == "free") {
@@ -245,8 +245,10 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
             //check if the page fits the new variable
             if(spaceLeftOnpage >= theNewVariableSize){
                 variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
-                variables[i]->virtual_address = variables[i]->virtual_address + theNewVariableSize;
+                
                 mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, newVariable->virtual_address);
+                variables[i]->virtual_address = variables[i]->virtual_address + theNewVariableSize;
+                
 
                 uint32_t tempAddress = addressOfFreeSpace + theNewVariableSize - 1;
                 int endOfVariablePage = page_table->getPageNumber(tempAddress);
@@ -258,7 +260,6 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
                         i++;
                     }
                 }
-
                 if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
                         std::cout << addressOfFreeSpace << std::endl;
                 }
@@ -271,8 +272,8 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
                     
                 if(sizeOfFreeSpace >= theNewVariableSize){
                     variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
+                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, newVariable->virtual_address);
                     variables[i]->virtual_address = addressOfFreeSpace + theNewVariableSize;
-                    mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, addressOfFreeSpace);
 
                     uint32_t tempAddress = addressOfFreeSpace + theNewVariableSize - 1;
                     int endOfVariablePage = page_table->getPageNumber(tempAddress);
@@ -284,7 +285,6 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
                             i++;
                         }
                     }
-                    
                     if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
                         std::cout << addressOfFreeSpace << std::endl;
                     }
@@ -301,8 +301,8 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
                 }
                 if(sizeOfFreeSpace >= theNewVariableSize){
                     variables[i]->size = sizeOfFreeSpace - theNewVariableSize;
-                    variables[i]->virtual_address = addressOfFreeSpace + theNewVariableSize;
                     mmu->addVariableToProcess(pid, var_name, type, theNewVariableSize, addressOfFreeSpace);
+                    variables[i]->virtual_address = addressOfFreeSpace + theNewVariableSize;
 
                     uint32_t tempAddress = addressOfFreeSpace + theNewVariableSize - 1;
                     int endOfVariablePage = page_table->getPageNumber(tempAddress);
@@ -315,7 +315,6 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
                             i++;
                         }
                     }
-
                     if(var_name != "<TEXT>" && var_name != "<GLOBALS>" && var_name != "<STACK>"){
                         std::cout << addressOfFreeSpace << std::endl;
                     }
@@ -332,17 +331,15 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
 /** [ALMOST DONE] Sets the value for a variable starting at an offset **/
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
 {
-   
-    
     // TODO: implement this!
     //   - look up physical address for variable based on its virtual address / offset
     //   - insert `value` into `memory` at physical address
     //   * note: this function only handles a single element (i.e. you'll need to call this within a loop when setting
     //           multiple elements of an array)
     Variable current_var = mmu->getVariable(pid, var_name);
-    // physical_address = the variable address + the offset?
     uint32_t physical_address = page_table->getPhysicalAddress(pid, current_var.virtual_address+offset);
-    memcpy((uint32_t*)memory + physical_address, value, current_var.size);
+    memcpy((uint8_t*)memory + physical_address, value, current_var.size);
+
 }
 
 /** [INCOMPLETE] Deallocates memory on the heap that is associated with a variable **/
