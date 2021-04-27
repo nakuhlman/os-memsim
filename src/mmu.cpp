@@ -92,7 +92,7 @@ bool Mmu::removeProcess(uint32_t pid) {
     return false;
 }
 
-bool Mmu::findProcess(uint32_t pid){
+bool Mmu::removeProcess(uint32_t pid) {
     for(int i=0; i < _processes.size(); i++){
         if(_processes[i]->pid == pid){
             return true;
