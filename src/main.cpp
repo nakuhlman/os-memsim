@@ -330,11 +330,7 @@ void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *valu
     Variable* current_var = mmu->getVariable(pid, var_name);
     int physical_address = page_table->getPhysicalAddress(pid, current_var->virtual_address+offset);
     uint32_t elementSize = element_size(current_var->type);
-    memcpy((uint8_t*)memory + physical_address, (uint8_t*)value, elementSize);
-    uint32_t input = *((uint32_t*)memory + 10);
-
-    std::cout << "value: " << *(uint32_t*)value << std::endl;
-
+    memcpy((uint8_t*)memory + physical_address, value, elementSize);
 }
 
 /** Deallocates memory on the heap that is associated with a variable **/
