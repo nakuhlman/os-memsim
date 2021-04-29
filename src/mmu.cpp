@@ -187,41 +187,56 @@ void Mmu::freeVariable(uint32_t pid, Variable* curVar){
     int indexOfCurVar = getVariableWithaddress(pid, curVar->virtual_address);
     int indexOfNextVariable = getVariableWithaddress(pid, curVar->virtual_address + curVar->size);
 
+    int indexOfprev = curVar->virtual_address-1;
+    while(indexOfprev != 0){
+            if(getVariableWithaddress(pid, indexOfprev) != -1){
+                indexOfprev = getVariableWithaddress(pid, indexOfprev);
+                break;
+            }
+        indexOfprev--;
+    }
+
     
     for(int i=0; i < _processes.size(); i++){
-        int indexOfprev = _processes[i]->variables[indexOfCurVar]->virtual_address;
 
         if(_processes[i]->pid == pid) {
-            if(_processes[i]->variables[indexOfNextVariable]->name == "<FREE_SPACE>"){
-                _processes[i]->variables[indexOfNextVariable]->virtual_address = _processes[i]->variables[indexOfCurVar]->virtual_address;
 
-                _processes[i]->variables[indexOfNextVariable]->size = _processes[i]->variables[indexOfNextVariable]->size
-                + _processes[i]->variables[indexOfCurVar]->size;
 
+            if(_processes[i]->variables[indexOfNextVariable]->name == "<FREE_SPACE>" && _processes[i]->variables[indexOfprev]->name == "<FREE_SPACE>"){
+                _processes[i]->variables[indexOfNextVariable]->virtual_address = _processes[i]->variables[indexOfprev]->virtual_address;
+
+                _processes[i]->variables[indexOfNextVariable]->size = _processes[i]->variables[indexOfNextVariable]->size + _processes[i]->variables[indexOfCurVar]->size;
+                _processes[i]->variables[indexOfNextVariable]->size = _processes[i]->variables[indexOfNextVariable]->size  + _processes[i]->variables[indexOfprev]->size;
                 _processes[i]->variables.erase(_processes[i]->variables.begin() + indexOfCurVar);
-                indexOfprev = _processes[i]->variables[indexOfNextVariable]->virtual_address - 1;
-            }
-
-            while(indexOfprev != 0){
-                if(getVariableWithaddress(pid, indexOfprev) != -1){
-                    indexOfprev = getVariableWithaddress(pid, indexOfprev);
-                    break;
-                }
-                indexOfprev--;
-            }
-
-
-            if(_processes[i]->variables[indexOfprev]->name == "<FREE_SPACE>"){
-                _processes[i]->variables[indexOfprev]->size = _processes[i]->variables[indexOfprev]->size
-                + _processes[i]->variables[indexOfCurVar]->size;
                 _processes[i]->variables.erase(_processes[i]->variables.begin() + indexOfprev);
-            }
-            if(_processes[i]->variables[indexOfNextVariable]->name != "<FREE_SPACE>" && 
-            _processes[i]->variables[indexOfprev]->name != "<FREE_SPACE>"){
-                _processes[i]->variables[indexOfCurVar]->name = "<FREE_SPACE>";
-                _processes[i]->variables[indexOfCurVar]->type = DataType::FreeSpace;
+            }else{
+                if(_processes[i]->variables[indexOfNextVariable]->name == "<FREE_SPACE>"){
+                    _processes[i]->variables[indexOfNextVariable]->virtual_address = _processes[i]->variables[indexOfCurVar]->virtual_address;
 
+                    _processes[i]->variables[indexOfNextVariable]->size = _processes[i]->variables[indexOfNextVariable]->size
+                    + _processes[i]->variables[indexOfCurVar]->size;
+
+                    _processes[i]->variables.erase(_processes[i]->variables.begin() + indexOfCurVar);
+                }
+
+
+                if(_processes[i]->variables[indexOfprev]->name == "<FREE_SPACE>"){
+                    _processes[i]->variables[indexOfprev]->size = _processes[i]->variables[indexOfprev]->size
+                    + _processes[i]->variables[indexOfCurVar]->size;
+                    _processes[i]->variables.erase(_processes[i]->variables.begin() + indexOfCurVar);
+                }
+
+
+                if(_processes[i]->variables[indexOfNextVariable]->name != "<FREE_SPACE>" && 
+                    _processes[i]->variables[indexOfprev]->name != "<FREE_SPACE>"){
+                    _processes[i]->variables[indexOfCurVar]->name = "<FREE_SPACE>";
+                    _processes[i]->variables[indexOfCurVar]->type = DataType::FreeSpace;
+
+                }
             }
+
+
+            
             
         }
     }
