@@ -187,13 +187,16 @@ void Mmu::freeVariable(uint32_t pid, Variable* curVar){
     int indexOfCurVar = getVariableWithaddress(pid, curVar->virtual_address);
     int indexOfNextVariable = getVariableWithaddress(pid, curVar->virtual_address + curVar->size);
 
-    int indexOfprev = curVar->virtual_address-1;
+    uint32_t tempAddress = curVar->virtual_address-1;
+
+    int indexOfprev = -1;
+
     while(indexOfprev != 0){
-            if(getVariableWithaddress(pid, indexOfprev) != -1){
-                indexOfprev = getVariableWithaddress(pid, indexOfprev);
+            if(getVariableWithaddress(pid, tempAddress) != -1){
+                indexOfprev = getVariableWithaddress(pid, tempAddress);
                 break;
             }
-        indexOfprev--;
+        tempAddress--;
     }
 
     

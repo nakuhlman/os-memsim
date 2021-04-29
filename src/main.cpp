@@ -94,40 +94,42 @@ int main(int argc, char **argv)
             
             // Call setVariable() for all n values passed in, starting from the 4th parameter and ending at the size of the vector
             if(curVar->type == DataType::Char){
+                
                 for(int i = 4; i < command_parameters.size(); i++) {
                     char val = command_parameters[i].at(0);
-                    setVariable(PID, var_name, offset + nextElementOffset, &val, mmu, page_table, memory);
+                    setVariable(PID, var_name, (offset + nextElementOffset)* 1, &val, mmu, page_table, memory);
                     nextElementOffset++;
                 }
             }else if(curVar->type == DataType::Int){
                 for(int i = 4; i < command_parameters.size(); i++) {
                     int val = std::stoi(command_parameters[i]);
-                    setVariable(PID, var_name, offset + nextElementOffset, &val, mmu, page_table, memory);
-                    nextElementOffset = nextElementOffset + 4;
+                    setVariable(PID, var_name, (offset + nextElementOffset) * 4, &val, mmu, page_table, memory);
+                    nextElementOffset++;
                 }
             }else if(curVar->type == DataType::Short){
                 for(int i = 4; i < command_parameters.size(); i++) {
                     short val = std::stoi(command_parameters[i]);
-                    setVariable(PID, var_name, offset, &val, mmu, page_table, memory);
-                    nextElementOffset = nextElementOffset + 2;
+                    setVariable(PID, var_name, (offset + nextElementOffset) * 2, &val, mmu, page_table, memory);
+                    nextElementOffset++;
                 }
             }else if(curVar->type == DataType::Float){
                 for(int i = 4; i < command_parameters.size(); i++) {
                     float val = std::stof(command_parameters[i]);
-                    setVariable(PID, var_name, offset + nextElementOffset, &val, mmu, page_table, memory);
-                    nextElementOffset = nextElementOffset + 4;
+                    setVariable(PID, var_name, (offset + nextElementOffset) * 4, &val, mmu, page_table, memory);
+                    nextElementOffset++;
                 }
             }else if(curVar->type == DataType::Double){
                 for(int i = 4; i < command_parameters.size(); i++) {
                     double val = std::stod(command_parameters[i]);
-                    setVariable(PID, var_name, offset + nextElementOffset, &val, mmu, page_table, memory);
-                    nextElementOffset = nextElementOffset + 8;
+                    setVariable(PID, var_name, (offset + nextElementOffset) * 8, &val, mmu, page_table, memory);
+                    nextElementOffset++;
                 }
             }else if(curVar->type == DataType::Long){
                 for(int i = 4; i < command_parameters.size(); i++) {
                     long val = std::stol(command_parameters[i]);
-                    setVariable(PID, var_name, offset + nextElementOffset, &val, mmu, page_table, memory);
-                    nextElementOffset = nextElementOffset + 8;
+                    std::cout << "set Long print: " << val << std::endl;
+                    setVariable(PID, var_name, (offset + nextElementOffset) * 8, &val, mmu, page_table, memory);
+                    nextElementOffset++;
                 }
             }
 
@@ -173,6 +175,7 @@ int main(int argc, char **argv)
                     } else if(!mmu->findVariable(PID, var_name)) {
                         std::cout << "error: command not recognized" << std::endl;
                     } else {
+                        int counter = 0;
                     switch (curVar->type) {
 
                         case DataType::Char:
@@ -181,17 +184,21 @@ int main(int argc, char **argv)
                             uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
 
                             memcpy(&curChar, (uint8_t*)memory + physical_address + i, elementSize);
+
+
                             if(i == 0){
                                 std::cout << curChar;
+                                counter++;
                             }else{
-                                if(curChar != NULL){
-                                    std::cout << curChar << ", ";
+                                if(curChar != NULL && counter < 4){
+                                    std::cout << ", " << curChar;
                                 }
+                                counter++;
                             }
 
                             
-                            if(i == 3 * elementSize) {
-                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                            if(counter == 4) {
+                                std::cout << ", ... [" << curVarElements << " items]";
                                 break;
                             }
                         }
@@ -204,12 +211,19 @@ int main(int argc, char **argv)
                             int curInt;
                             uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
                             memcpy(&curInt, (uint8_t*)memory + physical_address + i, elementSize);
-                            std::cout << curInt;
-                            if(i != 0) {
-                                std::cout << ", ";
+                            if(i == 0){
+                                std::cout << curInt;
+                                counter++;
+                            }else{
+                                if(curInt != NULL && counter < 4){
+                                    std::cout << ", " << curInt;
+                                }
+                                counter++;
                             }
-                            if(i == 3 * elementSize) {
-                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+
+                            
+                            if(counter == 4) {
+                                std::cout << ", ... [" << curVarElements << " items]";
                                 break;
                             }
                         }    
@@ -217,15 +231,25 @@ int main(int argc, char **argv)
                         break;
 
                         case DataType::Short:
-                        for(int i = 0; i < curVarElements; i++) {
+                        for(int i = 0; i < curVar->size; i = i + elementSize) {
                             short curShort;
                             uint32_t elementSize = element_size(curVar->type);
                             uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
 
-                            memcpy(&curShort, (uint8_t*)memory + physical_address, elementSize);
-                            std::cout << curShort << ", ";
-                            if(i == 3) {
-                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                            memcpy(&curShort, (uint8_t*)memory + physical_address + i, elementSize);
+                            if(i == 0){
+                                std::cout << curShort;
+                                counter++;
+                            }else{
+                                if(curShort != NULL && counter < 4){
+                                    std::cout << ", " << curShort;
+                                }
+                                counter++;
+                            }
+
+                            
+                            if(counter == 4) {
+                                std::cout << ", ... [" << curVarElements << " items]";
                                 break;
                             }
                         }        
@@ -233,15 +257,26 @@ int main(int argc, char **argv)
                         break;
 
                         case DataType::Float:
-                        for(int i = 0; i < curVarElements; i++) {
+                        for(int i = 0; i < curVar->size; i = i + elementSize) {
                             float curFloat;
                             uint32_t elementSize = element_size(curVar->type);
                             uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
 
-                            memcpy(&curFloat, (uint8_t*)memory + physical_address, elementSize);
+                            memcpy(&curFloat, (uint8_t*)memory + physical_address + i, elementSize);
                             std::cout << curFloat << ", ";
-                            if(i == 3) {
-                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                            if(i == 0){
+                                std::cout << curFloat;
+                                counter++;
+                            }else{
+                                if(curFloat != NULL && counter < 4){
+                                    std::cout << ", " << curFloat;
+                                }
+                                counter++;
+                            }
+
+                            
+                            if(counter == 4) {
+                                std::cout << ", ... [" << curVarElements << " items]";
                                 break;
                             }
                         }     
@@ -249,15 +284,25 @@ int main(int argc, char **argv)
                         break;
 
                         case DataType::Double:
-                        for(int i = 0; i < curVarElements; i++) {
+                        for(int i = 0; i < curVar->size; i = i + elementSize) {
                             double curDouble;
                             uint32_t elementSize = element_size(curVar->type);
                             uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
 
-                            memcpy(&curDouble, (uint8_t*)memory + physical_address, elementSize);
-                            std::cout << curDouble << ", ";
-                            if(i == 3) {
-                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                            memcpy(&curDouble, (uint8_t*)memory + physical_address + i, elementSize);
+                            if(i == 0){
+                                std::cout << curDouble;
+                                counter++;
+                            }else{
+                                if(curDouble != NULL && counter < 4){
+                                    std::cout << ", " << curDouble;
+                                }
+                                counter++;
+                            }
+
+                            
+                            if(counter == 4) {
+                                std::cout << ", ... [" << curVarElements << " items]";
                                 break;
                             }
                         }
@@ -265,15 +310,26 @@ int main(int argc, char **argv)
                         break;
 
                         case DataType::Long:
-                        for(int i = 0; i < curVarElements; i++) {
+                        for(int i = 0; i < curVar->size; i = i + elementSize) {
                             long curLong;
                             uint32_t elementSize = element_size(curVar->type);
                             uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
 
-                            memcpy(&curLong, (uint8_t*)memory + physical_address, elementSize);
-                            std::cout << curLong << ", ";
-                            if(i == 3) {
-                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                            memcpy(&curLong, (uint8_t*)memory + physical_address + i, elementSize);
+
+                            if(i == 0){
+                                std::cout << curLong;
+                                counter++;
+                            }else{
+                                if(curLong != NULL && counter < 4){
+                                    std::cout << ", " << curLong;
+                                }
+                                counter++;
+                            }
+
+                            
+                            if(counter == 4) {
+                                std::cout << ", ... [" << curVarElements << " items]";
                                 break;
                             }
                         }
