@@ -181,8 +181,15 @@ int main(int argc, char **argv)
                             uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
 
                             memcpy(&curChar, (uint8_t*)memory + physical_address + i, elementSize);
+                            if(i == 0){
+                                std::cout << curChar;
+                            }else{
+                                if(curChar != NULL){
+                                    std::cout << curChar << ", ";
+                                }
+                            }
 
-                            std::cout << curChar << ", ";
+                            
                             if(i == 3 * elementSize) {
                                 std::cout << ".. [" << curVarElements << " items]" << std::endl;
                                 break;
@@ -475,6 +482,9 @@ void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_
         std::cout << "error: variable not found" << std::endl;
         return;
     }
+
+    Variable* curVar = mmu->getVariable(pid, var_name);
+    mmu->freeVariable(pid, curVar);
 
     // Remove entry from MMU by by changing the variable name and type to represent free space (using set()?)
 

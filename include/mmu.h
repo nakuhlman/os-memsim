@@ -38,9 +38,11 @@ public:
     int getFreeSpaceLeftOnPage(uint32_t pid, int page_number, int page_size, uint32_t address);
     bool removeProcess(uint32_t pid);
     Variable* getVariable(uint32_t pid, std::string var_name);
+    int getVariableWithaddress(uint32_t pid, uint32_t address);
     bool findProcess(uint32_t pid);
     bool findVariable(uint32_t pid, std::string var_name);
     void printProcesses();
+    void freeVariable(uint32_t pid, Variable* curVar);
 };
 
 #endif // __MMU_H_

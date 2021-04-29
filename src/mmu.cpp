@@ -67,7 +67,7 @@ void Mmu::print()
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
             // If the current variable is not a <FREE_SPACE> entry...
-            if(_processes[i]->variables[j]->name != "<FREE_SPACE>") 
+            if(_processes[i]->variables[j]->name != "<FREE_SPACE>1") 
             {
                 std::stringstream ss;
                 ss << "  0x" << std::setfill('0') << std::setw(8) << std::uppercase << std::hex << _processes[i]->variables[j]->virtual_address;
@@ -180,6 +180,72 @@ Variable* Mmu::getVariable(uint32_t pid, std::string var_name) {
     }else{
         return empty;
     }
+}
+
+void Mmu::freeVariable(uint32_t pid, Variable* curVar){
+    std::vector<Variable*> allVariables = getVariables(pid);
+    int indexOfCurVar = getVariableWithaddress(pid, curVar->virtual_address);
+    int indexOfNextVariable = getVariableWithaddress(pid, curVar->virtual_address + curVar->size);
+
+    
+    for(int i=0; i < _processes.size(); i++){
+        int indexOfprev = _processes[i]->variables[indexOfCurVar]->virtual_address;
+
+        if(_processes[i]->pid == pid) {
+            if(_processes[i]->variables[indexOfNextVariable]->name == "<FREE_SPACE>"){
+                _processes[i]->variables[indexOfNextVariable]->virtual_address = _processes[i]->variables[indexOfCurVar]->virtual_address;
+
+                _processes[i]->variables[indexOfNextVariable]->size = _processes[i]->variables[indexOfNextVariable]->size
+                + _processes[i]->variables[indexOfCurVar]->size;
+
+                _processes[i]->variables.erase(_processes[i]->variables.begin() + indexOfCurVar);
+                indexOfprev = _processes[i]->variables[indexOfNextVariable]->virtual_address - 1;
+            }
+
+            while(indexOfprev != 0){
+                if(getVariableWithaddress(pid, indexOfprev) != -1){
+                    indexOfprev = getVariableWithaddress(pid, indexOfprev);
+                    break;
+                }
+                indexOfprev--;
+            }
+
+
+            if(_processes[i]->variables[indexOfprev]->name == "<FREE_SPACE>"){
+                _processes[i]->variables[indexOfprev]->size = _processes[i]->variables[indexOfprev]->size
+                + _processes[i]->variables[indexOfCurVar]->size;
+                _processes[i]->variables.erase(_processes[i]->variables.begin() + indexOfprev);
+            }
+            if(_processes[i]->variables[indexOfNextVariable]->name != "<FREE_SPACE>" && 
+            _processes[i]->variables[indexOfprev]->name != "<FREE_SPACE>"){
+                _processes[i]->variables[indexOfCurVar]->name = "<FREE_SPACE>";
+                _processes[i]->variables[indexOfCurVar]->type = DataType::FreeSpace;
+
+            }
+            
+        }
+    }
+
+
+}
+
+int Mmu::getVariableWithaddress(uint32_t pid, uint32_t address){
+    if(findProcess(pid)){
+        for(int i=0; i < _processes.size(); i++){
+            if(_processes[i]->pid == pid) {
+                int j;
+                for(j = 0; j < _processes[i]->variables.size(); j++) { 
+                    if(_processes[i]->variables[j]->virtual_address == address) {
+                        return j;
+                    }
+                }
+                return -1;
+            }
+        }
+        return -1;
+    }else{
+        return -1;
+    }   
 }
 
 int Mmu::getFreeSpaceLeftOnPage(uint32_t pid, int page_number, int page_size, uint32_t address){
