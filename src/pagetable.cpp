@@ -49,9 +49,9 @@ void PageTable::addEntry(uint32_t pid, int page_number)
 int PageTable::getPhysicalAddress(uint32_t pid, uint32_t virtual_address)
 {
     // Page offset can be found using modulus; page offset is the distance (in bytes) relative to the start of the page
-    int page_offset =  virtual_address % _page_size;
+    int page_offset = virtual_address % _page_size;
     // Call getPageNumber() to find the page number for the passed-in virtual address
-    int page_number = virtual_address / _page_size;
+    int page_number = PageTable::getPageNumber(virtual_address);
     // Combination of pid and page number act as the key to look up frame number in the page table
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
     
@@ -60,12 +60,12 @@ int PageTable::getPhysicalAddress(uint32_t pid, uint32_t virtual_address)
     int frame_number = 0;
     if (_table.count(entry) > 0) 
     { 
-        frame_number = _table[entry];
+        frame_number = _table.at(entry); 
     }
 
+    // Physical address = [physical page number (a.k.a. frame number) * page size] + offset
     address = (frame_number * _page_size) + page_offset;
 
-    
     // Return the physical address
     return address;
 }
@@ -84,15 +84,19 @@ void PageTable::print()
     for (i = 0; i < keys.size(); i++)
     {   
         // Format the current key-value pair for printing
-
+        /*
+        std::string pid = keys[i].substr(0, 3);
+        std::string page_number = keys[i].substr(), 3);
+        */
         int frame_number = _table[keys[i]];
-        std::string printCurrent = keys[i];
-        printCurrent.insert(4, " ");
-        if(stoi(printCurrent.substr(6)) < 10) { printCurrent.insert(6, "           "); }
-        else { printCurrent.insert(6, "          "); }
+        
+
+        keys[i].insert(4, " ");
+        if(stoi(keys[i].substr(6)) < 10) { keys[i].insert(6, "           "); }
+        else { keys[i].insert(6, "          "); }
 
         // Print the key (which includes the PID and Page Number) and also the value associated with that key (the Frame Number) 
-        printf(" %5s | %12d\n", printCurrent.c_str(), frame_number);
+        printf(" %5s | %12u\n", keys[i].c_str(), frame_number);
     }
 }
 
@@ -112,5 +116,5 @@ void PageTable::freePagesOfProcess(uint32_t pid) {
 /** Calculates a page number using a virtual address and a page size **/
 int PageTable::getPageNumber(uint32_t address) {
     // The page number is the number of pages counting up from 0
-    return address / _page_size;
+    return floor(address / _page_size);
 }

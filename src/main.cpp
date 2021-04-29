@@ -14,8 +14,9 @@ void freeVariable(uint32_t pid, std::string var_name, Mmu *mmu, PageTable *page_
 void terminateProcess(uint32_t pid, Mmu *mmu, PageTable *page_table);
 void splitString(std::string text, char d, std::vector<std::string>& result);
 int element_size(DataType type);
-/** Main function **/
+void printValue(uint32_t pid, std::string var_name, uint32_t offset, void *value, void *memory);
 
+/** Main function **/
 int main(int argc, char **argv)
 {
     // Ensure user specified page size as a command line parameter
@@ -37,7 +38,6 @@ int main(int argc, char **argv)
     Mmu *mmu = new Mmu(mem_size);
     PageTable *page_table = new PageTable(page_size);
     
-
     // Prompt loop
     std::string command;
     std::vector<std::string> command_parameters;
@@ -58,9 +58,6 @@ int main(int argc, char **argv)
 
         // Parse allocate() arguments
         } else if(command_parameters[0] == "allocate") {
-            /* 
-            void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_t num_elements, Mmu *mmu, PageTable *page_table)
-            */
             uint32_t pid = atoi(command_parameters[1].c_str());
 
             //check if process exists
@@ -86,28 +83,54 @@ int main(int argc, char **argv)
                 std::cout << "error: process not found" << std::endl;
             }
 
-
-            
-            /*
-            std::cout << "pid: " << pid << std::endl;
-            std::cout << "var_name: " << var_name << std::endl;
-            std::cout << "type: " << type << std::endl;
-            std::cout << "num_elements: " << num_elements << std::endl;
-            */
-
-            
-
         // Parse set() arguments
         } else if(command_parameters[0] == "set") {
 
             uint32_t PID = std::stoi(command_parameters[1]);
             std::string var_name = command_parameters[2];
-            uint32_t offset = std::stoi(command_parameters[3]);
+            int offset = std::stoi(command_parameters[3]);
+            Variable* curVar = mmu->getVariable(PID, var_name);
+            int nextElementOffset = 0;
             
             // Call setVariable() for all n values passed in, starting from the 4th parameter and ending at the size of the vector
-            for(int i = 4; i < command_parameters.size(); i++) {
-                setVariable(PID, var_name, offset, &command_parameters[i], mmu, page_table, memory);
+            if(curVar->type == DataType::Char){
+                for(int i = 4; i < command_parameters.size(); i++) {
+                    char val = command_parameters[i].at(0);
+                    setVariable(PID, var_name, offset + nextElementOffset, &val, mmu, page_table, memory);
+                    nextElementOffset++;
+                }
+            }else if(curVar->type == DataType::Int){
+                for(int i = 4; i < command_parameters.size(); i++) {
+                    int val = std::stoi(command_parameters[i]);
+                    setVariable(PID, var_name, offset + nextElementOffset, &val, mmu, page_table, memory);
+                    nextElementOffset = nextElementOffset + 4;
+                }
+            }else if(curVar->type == DataType::Short){
+                for(int i = 4; i < command_parameters.size(); i++) {
+                    short val = std::stoi(command_parameters[i]);
+                    setVariable(PID, var_name, offset, &val, mmu, page_table, memory);
+                    nextElementOffset = nextElementOffset + 2;
+                }
+            }else if(curVar->type == DataType::Float){
+                for(int i = 4; i < command_parameters.size(); i++) {
+                    float val = std::stof(command_parameters[i]);
+                    setVariable(PID, var_name, offset + nextElementOffset, &val, mmu, page_table, memory);
+                    nextElementOffset = nextElementOffset + 4;
+                }
+            }else if(curVar->type == DataType::Double){
+                for(int i = 4; i < command_parameters.size(); i++) {
+                    double val = std::stod(command_parameters[i]);
+                    setVariable(PID, var_name, offset + nextElementOffset, &val, mmu, page_table, memory);
+                    nextElementOffset = nextElementOffset + 8;
+                }
+            }else if(curVar->type == DataType::Long){
+                for(int i = 4; i < command_parameters.size(); i++) {
+                    long val = std::stol(command_parameters[i]);
+                    setVariable(PID, var_name, offset + nextElementOffset, &val, mmu, page_table, memory);
+                    nextElementOffset = nextElementOffset + 8;
+                }
             }
+
         // Parse free() arguments
         } else if(command_parameters[0] == "free") {
             uint32_t PID = std::stoi(command_parameters[1]);
@@ -141,11 +164,119 @@ int main(int argc, char **argv)
                 try {
                     uint32_t PID = std::stoi(print_process_arguments[0]);
                     std::string var_name = print_process_arguments[1];
+                    Variable* curVar = mmu->getVariable(PID, var_name);
+                    uint32_t elementSize = element_size(curVar->type);
+                    int curVarElements = (curVar->size)/elementSize;
 
+                    if(!mmu->findProcess(PID)) {
+                        std::cout << "error: process not found" << std::endl;
+                    } else if(!mmu->findVariable(PID, var_name)) {
+                        std::cout << "error: command not recognized" << std::endl;
+                    } else {
+                    switch (curVar->type) {
 
-                    // Print the value of the variable var_name for process PID
+                        case DataType::Char:
+                        for(int i = 0; i < curVar->size; i = i + elementSize) {
+                            char curChar;
+                            uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
 
+                            memcpy(&curChar, (uint8_t*)memory + physical_address + i, elementSize);
 
+                            std::cout << curChar << ", ";
+                            if(i == 3 * elementSize) {
+                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                                break;
+                            }
+                        }
+                        std::cout << std::endl;
+                        break;
+
+                        case DataType::Int:
+
+                        for(int i = 0; i < curVar->size; i = i + elementSize) {
+                            int curInt;
+                            uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
+                            memcpy(&curInt, (uint8_t*)memory + physical_address + i, elementSize);
+                            std::cout << curInt;
+                            if(i != 0) {
+                                std::cout << ", ";
+                            }
+                            if(i == 3 * elementSize) {
+                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                                break;
+                            }
+                        }    
+                        std::cout << std::endl;                    
+                        break;
+
+                        case DataType::Short:
+                        for(int i = 0; i < curVarElements; i++) {
+                            short curShort;
+                            uint32_t elementSize = element_size(curVar->type);
+                            uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
+
+                            memcpy(&curShort, (uint8_t*)memory + physical_address, elementSize);
+                            std::cout << curShort << ", ";
+                            if(i == 3) {
+                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                                break;
+                            }
+                        }        
+                        std::cout << std::endl;                
+                        break;
+
+                        case DataType::Float:
+                        for(int i = 0; i < curVarElements; i++) {
+                            float curFloat;
+                            uint32_t elementSize = element_size(curVar->type);
+                            uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
+
+                            memcpy(&curFloat, (uint8_t*)memory + physical_address, elementSize);
+                            std::cout << curFloat << ", ";
+                            if(i == 3) {
+                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                                break;
+                            }
+                        }     
+                        std::cout << std::endl;                   
+                        break;
+
+                        case DataType::Double:
+                        for(int i = 0; i < curVarElements; i++) {
+                            double curDouble;
+                            uint32_t elementSize = element_size(curVar->type);
+                            uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
+
+                            memcpy(&curDouble, (uint8_t*)memory + physical_address, elementSize);
+                            std::cout << curDouble << ", ";
+                            if(i == 3) {
+                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                                break;
+                            }
+                        }
+                        std::cout << std::endl;
+                        break;
+
+                        case DataType::Long:
+                        for(int i = 0; i < curVarElements; i++) {
+                            long curLong;
+                            uint32_t elementSize = element_size(curVar->type);
+                            uint32_t physical_address = page_table->getPhysicalAddress(PID, curVar->virtual_address);
+
+                            memcpy(&curLong, (uint8_t*)memory + physical_address, elementSize);
+                            std::cout << curLong << ", ";
+                            if(i == 3) {
+                                std::cout << ".. [" << curVarElements << " items]" << std::endl;
+                                break;
+                            }
+                        }
+                        std::cout << std::endl;
+                        break;
+
+                        default:
+                        break;
+                    }
+                    }
                 } catch(const std::invalid_argument& ia) {
                     std::cout << "error: command not recognized" << std::endl;
                 }
@@ -312,21 +443,18 @@ void allocateVariable(uint32_t pid, std::string var_name, DataType type, uint32_
 /** Sets the value for a variable starting at an offset **/
 void setVariable(uint32_t pid, std::string var_name, uint32_t offset, void *value, Mmu *mmu, PageTable *page_table, void *memory)
 {
-    // TODO: implement this!
-    //   - look up physical address for variable based on its virtual address / offset
-    //   - insert `value` into `memory` at physical address
-    //   * note: this function only handles a single element (i.e. you'll need to call this within a loop when setting
-    //           multiple elements of an array)
     // Check if the pid exists, if not, print an error and do nothing
     if(!mmu->findProcess(pid)) {
         std::cout << "error: process not found" << std::endl;
         return;
     }
 
+    // Check if the variable exists, if not, print an error and do nothing
     if(!mmu->findVariable(pid, var_name)) {
         std::cout << "error: variable not found" << std::endl;
         return;
     }
+
     Variable* current_var = mmu->getVariable(pid, var_name);
     int physical_address = page_table->getPhysicalAddress(pid, current_var->virtual_address+offset);
     uint32_t elementSize = element_size(current_var->type);
