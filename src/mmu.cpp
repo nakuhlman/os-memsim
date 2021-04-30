@@ -67,7 +67,7 @@ void Mmu::print()
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
             // If the current variable is not a <FREE_SPACE> entry...
-            if(_processes[i]->variables[j]->name != "<FREE_SPACE>1") 
+            if(_processes[i]->variables[j]->name != "<FREE_SPACE>") 
             {
                 std::stringstream ss;
                 ss << "  0x" << std::setfill('0') << std::setw(8) << std::uppercase << std::hex << _processes[i]->variables[j]->virtual_address;
@@ -183,6 +183,7 @@ Variable* Mmu::getVariable(uint32_t pid, std::string var_name) {
 }
 
 void Mmu::freeVariable(uint32_t pid, Variable* curVar){
+
     std::vector<Variable*> allVariables = getVariables(pid);
     int indexOfCurVar = getVariableWithaddress(pid, curVar->virtual_address);
     int indexOfNextVariable = getVariableWithaddress(pid, curVar->virtual_address + curVar->size);
@@ -203,11 +204,11 @@ void Mmu::freeVariable(uint32_t pid, Variable* curVar){
     for(int i=0; i < _processes.size(); i++){
 
         if(_processes[i]->pid == pid) {
+            // Check if either the variable just before it and/or just after it are also free space - if so merge them into one larger free space
 
 
             if(_processes[i]->variables[indexOfNextVariable]->name == "<FREE_SPACE>" && _processes[i]->variables[indexOfprev]->name == "<FREE_SPACE>"){
                 _processes[i]->variables[indexOfNextVariable]->virtual_address = _processes[i]->variables[indexOfprev]->virtual_address;
-
                 _processes[i]->variables[indexOfNextVariable]->size = _processes[i]->variables[indexOfNextVariable]->size + _processes[i]->variables[indexOfCurVar]->size;
                 _processes[i]->variables[indexOfNextVariable]->size = _processes[i]->variables[indexOfNextVariable]->size  + _processes[i]->variables[indexOfprev]->size;
                 _processes[i]->variables.erase(_processes[i]->variables.begin() + indexOfCurVar);

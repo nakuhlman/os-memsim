@@ -36,7 +36,8 @@ public:
     void addEntry(uint32_t pid, int page_number);
     int getPhysicalAddress(uint32_t pid, uint32_t virtual_address);
     void print();
-    void freePagesOfProcess(uint32_t pid);
+    void freeAllPagesOfProcess(uint32_t pid);
+    void freeSinglePage(uint32_t pid, int page);
     int getPageSize();
     int getPageNumber(uint32_t address);
     

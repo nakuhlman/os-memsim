@@ -103,12 +103,28 @@ void PageTable::print()
 /** Getter method for the page size, defined by the user at program startup **/
 int PageTable::getPageSize(){ return _page_size; }
 
-void PageTable::freePagesOfProcess(uint32_t pid) {
+void PageTable::freeAllPagesOfProcess(uint32_t pid) {
     std::vector<std::string> keys = sortedKeys();
+
     for (int i = 0; i < keys.size(); i++)
     {
-        if(std::to_string(pid).find(keys[i]) != std::string::npos) {
+        // look at each key, and if the key contains the substring "PID" (PID converted to string using stoi()) remove that key-value pair
+        if(keys[i].find(std::to_string(pid)) != std::string::npos) {
             _table.erase(keys[i]);
+        }
+    }
+}
+
+void PageTable::freeSinglePage(uint32_t pid, int page) {
+    std::vector<std::string> keys = sortedKeys();
+
+    
+    for (int i = 0; i < keys.size(); i++)
+    {
+        // look at each key, and if the key contains the substring "PID" (PID converted to string using stoi()) remove that key-value pair
+        if((keys[i].find(std::to_string(pid)) != std::string::npos) && (keys[i].find(std::to_string(page)) != std::string::npos)) {
+            _table.erase(keys[i]);
+            break;
         }
     }
 }
